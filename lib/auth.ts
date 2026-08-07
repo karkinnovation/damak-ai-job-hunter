@@ -5,9 +5,10 @@ export type AppRole = 'job_seeker' | 'employer' | 'admin'
 
 export async function requireUser() {
   const supabase = await createClient()
-  const { data, error } = await supabase.auth.getUser()
-  if (error || !data.user) redirect('/auth')
-  return { supabase, user: data.user }
+  const { data, error } = await supabase.auth.getClaims()
+  const id = data?.claims?.sub
+  if (error || !id) redirect('/auth')
+  return { supabase, user: { id } }
 }
 
 export async function requireRole(allowed: AppRole[]) {

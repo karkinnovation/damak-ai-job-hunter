@@ -13,7 +13,7 @@ This repository is hardened for a hackathon MVP. No web application should be de
 - Candidate profiles are visible only to the candidate, admins, and employers whose jobs the candidate applied to.
 - Employer write policies require ownership of the business/job.
 - Duplicate applications are prevented at database level.
-- OpenAI API key is server-only.
+- Gemini API key is server-only and must never use a `NEXT_PUBLIC_` prefix.
 - AI receives only job-relevant matching fields, not email/phone/name.
 - Zod validation bounds strings, salary, hours, coordinates, wards and list sizes.
 - Basic security response headers are configured.

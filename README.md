@@ -11,7 +11,7 @@ Hackathon-ready MVP for two-sided local job matching in Damak, Jhapa, Nepal.
 - Vacancy posting and closing
 - Public vacancy browsing and job details
 - Deterministic 0–100 compatibility scoring
-- AI-generated explanation using OpenAI Responses API, with deterministic fallback when no API key is configured
+- AI-generated explanation using Google Gemini API, with deterministic fallback when no API key is configured
 - Job seeker “Hunt Jobs For Me” ranking
 - Apply flow and “My Applications”
 - Employer applicant ranking with reasons
@@ -26,7 +26,7 @@ Hackathon-ready MVP for two-sided local job matching in Damak, Jhapa, Nepal.
 - Next.js App Router + TypeScript
 - Supabase Auth + PostgreSQL + RLS
 - Zod validation
-- OpenAI API for natural-language match explanations
+- Google Gemini API for natural-language match explanations
 - Plain responsive CSS (no UI dependency required)
 
 ## 1. Create Supabase project
@@ -56,7 +56,7 @@ cp .env.example .env.local
 
 Use the **publishable** Supabase key in `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Do not put a service-role/secret key in the browser or in any `NEXT_PUBLIC_*` variable.
 
-`OPENAI_API_KEY` is optional for development: without it, the app uses deterministic explanations so your demo still works. When present, it is read only from server code.
+`GEMINI_API_KEY` is optional for development: without it, the app uses deterministic explanations so your demo still works. When present, it is read only from server code. Set `GEMINI_MODEL=gemini-2.5-flash` for the low-latency default.
 
 ## 4. Install and run
 
@@ -122,7 +122,7 @@ This is hardened for a hackathon MVP, not a substitute for a professional produc
 - A database trigger prevents users from changing their own role to `admin`.
 - Admin role is never accepted during public signup.
 - Candidate profile details are only readable by the candidate, admins, or employers who have received that candidate's application.
-- OpenAI key never reaches the browser.
+- Gemini API key never reaches the browser.
 - Matching intentionally excludes protected/sensitive traits.
 - Inputs are schema-validated and length/range bounded.
 - Duplicate applications are prevented by a database unique constraint.
@@ -154,7 +154,7 @@ Supabase Auth + PostgreSQL RLS
   ↓
 Deterministic matching engine
   ↓
-OpenAI explanation (optional, server-only)
+Gemini explanation (optional, server-only)
 ```
 
 ## Expansion later
