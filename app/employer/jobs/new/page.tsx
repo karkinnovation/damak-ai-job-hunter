@@ -15,7 +15,6 @@ async function createJob(formData: FormData) {
     salary_min: formData.get('salary_min'), salary_max: formData.get('salary_max'), employment_type: formData.get('employment_type'),
     experience_required_months: formData.get('experience_required_months'), education_requirement: formData.get('education_requirement') || '',
     working_start: formData.get('working_start'), working_end: formData.get('working_end'), number_of_openings: formData.get('number_of_openings'),
-    latitude: formData.get('latitude') || undefined, longitude: formData.get('longitude') || undefined,
     required_skills: formData.getAll('required_skills').map(String), preferred_skills: formData.getAll('preferred_skills').map(String),
   })
   if (!parsed.success) redirect('/employer/jobs/new?error=' + encodeURIComponent(parsed.error.issues[0]?.message || 'Invalid data'))
@@ -24,7 +23,7 @@ async function createJob(formData: FormData) {
     employer_id:user.id, business_id:business.id, title:d.title, description:d.description, category:d.category, ward:d.ward, city:'Damak',
     salary_min:d.salary_min, salary_max:d.salary_max, employment_type:d.employment_type, experience_required_months:d.experience_required_months,
     education_requirement:d.education_requirement || null, working_start:d.working_start, working_end:d.working_end, number_of_openings:d.number_of_openings,
-    latitude:d.latitude ?? business.latitude ?? null, longitude:d.longitude ?? business.longitude ?? null,
+    latitude:business.latitude ?? null, longitude:business.longitude ?? null,
     required_skills:d.required_skills, preferred_skills:d.preferred_skills, status:'open',
   })
   if (error) redirect('/employer/jobs/new?error=' + encodeURIComponent(error.message))
@@ -48,7 +47,7 @@ export default async function NewJob({ searchParams }: { searchParams: Promise<{
       <div className="field"><label>Number of openings</label><input type="number" min="1" max="100" name="number_of_openings" defaultValue="1" required /></div>
       <div className="field"><label>Required skills</label><div className="checks">{COMMON_SKILLS.map(s => <label className="check" key={s}><input type="checkbox" name="required_skills" value={s}/>{s}</label>)}</div></div>
       <div className="field"><label>Preferred / bonus skills</label><div className="checks">{COMMON_SKILLS.map(s => <label className="check" key={s}><input type="checkbox" name="preferred_skills" value={s}/>{s}</label>)}</div></div>
-      <details><summary>Optional job coordinates (defaults to business coordinates)</summary><div className="formGrid" style={{marginTop:12}}><div className="field"><label>Latitude</label><input type="number" step="any" name="latitude" /></div><div className="field"><label>Longitude</label><input type="number" step="any" name="longitude" /></div></div></details>
+      <div className="notice">📍 Workplace location comes from your Business Profile map pin, keeping distance matching consistent across your vacancies.</div>
       <button className="button" disabled={!business}>Publish vacancy</button>
     </form>
   </section>

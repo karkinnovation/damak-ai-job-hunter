@@ -34,7 +34,7 @@ export default async function Dashboard() {
     ] = await Promise.all([
       supabase
         .from('job_seeker_profiles')
-        .select('user_id,skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,preferred_categories')
+        .select('user_id,skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,preferred_categories,show_availability_to_employers')
         .eq('user_id', user.id)
         .maybeSingle(),
       supabase.from('applications').select('*', { count: 'exact', head: true }).eq('job_seeker_id', user.id),
@@ -46,7 +46,7 @@ export default async function Dashboard() {
         .limit(50),
     ])
 
-    const profileComplete = !seekerError && !!seeker
+    const profileComplete = !seekerError && !!seeker && seeker.latitude != null && seeker.longitude != null
 
     const bestMatches = seeker
       ? (openJobs || [])
@@ -111,6 +111,12 @@ export default async function Dashboard() {
             <span className="muted">Applications</span>
             <span className="stat">{applications || 0}</span>
             <Link href="/seeker/applications">View all applications →</Link>
+          </div>
+
+          <div className="card kpi">
+            <span className="muted">Employer visibility</span>
+            <span className="stat">{seeker?.show_availability_to_employers ? 'On' : 'Off'}</span>
+            <Link href="/seeker/profile">Manage privacy →</Link>
           </div>
 
           <div className="card kpi latestStatusCard">
@@ -188,10 +194,19 @@ export default async function Dashboard() {
   }
 
   if (profile.role === 'employer') {
-    const [{ data: business }, { count: jobs }] = await Promise.all([
+    const [{ data: business }, { count: jobs }, { data: anonymousSignals }] = await Promise.all([
       supabase.from('businesses').select('id, business_name').eq('user_id', user.id).maybeSingle(),
       supabase.from('jobs').select('*', { count: 'exact', head: true }).eq('employer_id', user.id),
+      supabase.rpc('search_anonymous_candidates', {
+        p_skill: null,
+        p_salary_min: null,
+        p_salary_max: null,
+        p_available_at: null,
+        p_max_distance_km: null,
+        p_ward: null,
+      }),
     ])
+    const talentCount = Array.isArray(anonymousSignals) ? anonymousSignals.length : 0
 
     return (
       <section className="container">
@@ -206,6 +221,7 @@ export default async function Dashboard() {
         <div className="grid">
           <div className="card kpi"><span className="muted">Business profile</span><span className="stat">{business ? 'Ready' : 'Incomplete'}</span><Link href="/employer/profile">Edit profile →</Link></div>
           <div className="card kpi"><span className="muted">Vacancies</span><span className="stat">{jobs || 0}</span><Link href="/employer/jobs">Manage vacancies →</Link></div>
+          <div className="card kpi"><span className="muted">Available talent</span><span className="stat">{talentCount}</span><Link href="/employer/talent">Browse anonymous talent →</Link></div>
           <div className="card kpi"><span className="muted">Hiring</span><span className="stat">AI-ranked</span><span className="muted">Recommendations never auto-reject applicants.</span></div>
         </div>
       </section>

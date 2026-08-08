@@ -65,12 +65,7 @@ form.stack{display:grid;gap:16px}.field{display:grid;gap:7px}.field label{font-s
   .quickCategories{margin-top:12px}
 }
 
-.brand-logo {
-  display: block;
-  height: 42px;
-  width: auto;
-  object-fit: contain;
-}
+
 /* Search UX v4: simplified copy + three salary bands */
 .heroOneLiner{font-size:17px!important;line-height:1.5!important;margin:0 0 28px!important;color:var(--muted)!important;max-width:none!important}
 .headerUtility{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;max-width:520px}
@@ -82,11 +77,7 @@ form.stack{display:grid;gap:16px}.field{display:grid;gap:7px}.field label{font-s
   .headerUtility{align-items:flex-start;justify-content:flex-start;max-width:none}
   .smartMatchText{font-size:12px}
 }
-@media (max-width: 640px) {
-  .brand-logo {
-    height: 34px;
-  }
-}
+
 /* Dashboard: surface the two best matches immediately after login */
 .dashboardMatches{margin-top:42px}.dashboardMatchHeader{align-items:flex-end}.bestMatchGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.dashboardMatchCard{display:flex;flex-direction:column;min-height:300px}.dashboardMatchTop{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:18px}.matchRank{font-size:12px;font-weight:900;color:#344054}.matchScoreBadge{display:inline-flex;align-items:center;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:900;background:#f2f4f7;color:#475467}.matchScore4{background:#ecfdf3;color:#067647}.matchScore3{background:#eff8ff;color:#175cd3}.matchScore2{background:#fffaeb;color:#b54708}.matchScore1,.matchScore0{background:#fef3f2;color:#b42318}.dashboardMatchCard h3{font-size:23px;margin:6px 0}.dashboardReasons{margin:4px 0 18px}.dashboardReasons p{font-size:13px;margin:7px 0}.dashboardMatchCard .button{margin-top:auto}.bestMatchEmpty{grid-column:1/-1}.dashboardProfileCta{grid-template-columns:1fr auto}.dashboardProfileCta .button{grid-column:auto}
 @media(max-width:680px){.bestMatchGrid{grid-template-columns:1fr}.dashboardMatches{margin-top:32px}.dashboardMatchTop{align-items:flex-start}.dashboardProfileCta{grid-template-columns:1fr}.dashboardProfileCta .button{width:100%}}
@@ -108,3 +99,10 @@ form.stack{display:grid;gap:16px}.field{display:grid;gap:7px}.field label{font-s
 /* UX v7: move homepage secondary line under vacancies heading */
 .homeJobsSecondary{margin:3px 0 0!important;color:var(--muted);font-size:14px;line-height:1.35}
 @media(max-width:680px){.homeJobsSecondary{margin-top:2px!important;font-size:13px}}
+
+/* v8 — anonymous talent broadcasting + Leaflet map location / apply preview */
+.mapPicker{display:grid;gap:10px;padding:16px;border:1px solid var(--line);border-radius:14px;background:#fbfcff}.mapPickerHead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.mapPickerHead p{margin:4px 0 0;font-size:12px;line-height:1.45}.leafletMap{height:330px;width:100%;border:1px solid #d0d5dd;border-radius:13px;overflow:hidden;background:#eef2f6;z-index:1}.mapPickerStatus{display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--muted);font-size:12px}.coordinateStatus{color:var(--good);font-weight:850}.awasarMapMarkerWrap{background:transparent!important;border:0!important}.awasarMapMarker{width:40px;height:40px;border-radius:14px 14px 14px 4px;transform:rotate(-45deg);display:grid;place-items:center;background:var(--primary);border:3px solid #fff;box-shadow:0 6px 18px rgba(16,24,40,.25)}.awasarMapMarker.work{background:#0e9384}.awasarMapMarker span{transform:rotate(45deg);color:#fff;font-size:12px;font-weight:950}.broadcastToggle{padding:15px;border:1px solid #c7d2fe;border-radius:14px;background:linear-gradient(135deg,#f6f8ff,#fff)}.toggleRow{display:flex;align-items:flex-start;gap:12px;cursor:pointer}.toggleRow>input{width:20px;height:20px;margin-top:2px;accent-color:var(--primary)}.toggleRow span{display:grid;gap:4px}.toggleRow strong{color:#25315f}.toggleRow small{color:var(--muted);font-size:12px;line-height:1.5}
+.talentCount{display:flex;align-items:center;gap:18px;margin-bottom:16px}.talentCount .stat{min-width:56px;color:var(--primary)}.talentCount p{margin:4px 0 0}.talentFilters{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.talentFilterActions{display:flex;align-items:flex-end;gap:8px}.talentGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.anonymousCandidateCard{display:grid;gap:13px}.anonymousCandidateTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.anonymousCandidateTop h3{margin:0}.anonymousFacts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0}.anonymousFacts>div{padding:10px;border-radius:10px;background:#f8fafc}.anonymousFacts dt{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.04em}.anonymousFacts dd{margin:4px 0 0;font-weight:800;color:#344054}.privacyNote{margin:0;padding-top:11px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.5}.talentEmpty{grid-column:1/-1}
+.applyPreviewPage{display:grid;gap:16px}.distanceSummary{display:flex;align-items:center;gap:18px}.distanceSummary.within{border-color:#abefc6;background:#f6fef9}.distanceSummary.outside{border-color:#fedf89;background:#fffcf5}.distanceNumber{font-size:34px;font-weight:950;letter-spacing:-.04em;color:var(--primary)}.distanceSummary p{margin:4px 0 0}.mapPreviewCard h3{margin-bottom:4px}.mapPreviewCard>p{margin:0 0 14px;font-size:12px}.distancePreviewMap{height:300px}.applyConfirmActions{display:flex;gap:10px;align-items:center}.applyConfirmActions form{margin:0}
+@media(max-width:900px){.talentFilters{grid-template-columns:1fr 1fr}.talentGrid{grid-template-columns:1fr}}
+@media(max-width:680px){.mapPickerHead{flex-direction:column}.mapPickerHead .button{width:100%}.leafletMap{height:285px}.mapPickerStatus{align-items:flex-start;flex-direction:column}.talentFilters{grid-template-columns:1fr}.talentFilterActions{align-items:stretch}.talentFilterActions .button{flex:1}.anonymousFacts{grid-template-columns:1fr}.distanceSummary{align-items:flex-start;flex-direction:column;gap:8px}.distancePreviewMap{height:260px}.applyConfirmActions{flex-direction:column;align-items:stretch}.applyConfirmActions .button,.applyConfirmActions form,.applyConfirmActions form button{width:100%}}

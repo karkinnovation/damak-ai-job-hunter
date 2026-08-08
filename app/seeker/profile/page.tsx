@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
 import { COMMON_SKILLS, JOB_CATEGORIES } from '@/lib/constants'
 import { seekerProfileSchema } from '@/lib/validation'
+import { LocationPicker } from '@/components/LeafletMap'
 
 async function saveProfile(formData: FormData) {
   'use server'
@@ -11,7 +12,7 @@ async function saveProfile(formData: FormData) {
     full_name: formData.get('full_name'), ward: formData.get('ward'), education_level: formData.get('education_level'),
     experience_months: formData.get('experience_months'), expected_salary_min: formData.get('expected_salary_min'), expected_salary_max: formData.get('expected_salary_max'),
     employment_type: formData.get('employment_type'), available_from: formData.get('available_from'), available_until: formData.get('available_until'), max_travel_km: formData.get('max_travel_km'),
-    latitude: formData.get('latitude') || undefined, longitude: formData.get('longitude') || undefined,
+    latitude: formData.get('latitude'), longitude: formData.get('longitude'), show_availability_to_employers: formData.get('show_availability_to_employers') === 'on',
     preferred_categories: formData.getAll('preferred_categories').map(String), skills: formData.getAll('skills').map(String),
   }
   const parsed = seekerProfileSchema.safeParse(raw)
@@ -22,7 +23,8 @@ async function saveProfile(formData: FormData) {
     user_id: user.id, ward: d.ward, city: 'Damak', education_level: d.education_level, experience_months: d.experience_months,
     expected_salary_min: d.expected_salary_min, expected_salary_max: d.expected_salary_max, employment_type: d.employment_type,
     available_from: d.available_from, available_until: d.available_until, max_travel_km: d.max_travel_km,
-    latitude: d.latitude ?? null, longitude: d.longitude ?? null, preferred_categories: d.preferred_categories, skills: d.skills,
+    latitude: d.latitude, longitude: d.longitude, show_availability_to_employers: d.show_availability_to_employers,
+    preferred_categories: d.preferred_categories, skills: d.skills,
   }, { onConflict: 'user_id' })
   if (error) redirect('/seeker/profile?error=' + encodeURIComponent(error.message))
   revalidatePath('/dashboard'); redirect('/dashboard')
@@ -34,7 +36,7 @@ export default async function SeekerProfile({ searchParams }: { searchParams: Pr
   const { error } = await searchParams
   const selectedSkills: string[] = data?.skills || []
   const selectedCategories: string[] = data?.preferred_categories || []
-  return <section className="narrow"><span className="eyebrow">Job seeker profile</span><h1>What kind of job fits you?</h1><p className="muted">These details power your match score. Avoid including sensitive personal traits; the matching engine does not use them.</p>
+  return <section className="narrow"><span className="eyebrow">Job seeker profile</span><h1>What kind of job fits you?</h1><p className="muted">These details power your match score. Your exact location stays private from anonymous employer browsing.</p>
     {error && <p className="error">{error}</p>}
     <form className="stack card" action={saveProfile}>
       <div className="field"><label>Full name</label><input name="full_name" defaultValue={profile.full_name || ''} required /></div>
@@ -45,7 +47,19 @@ export default async function SeekerProfile({ searchParams }: { searchParams: Pr
       <div className="field"><label>Available until</label><input type="time" name="available_until" defaultValue={(data?.available_until || '18:00').slice(0,5)} required /></div>
       <div className="field"><label>Skills</label><div className="checks">{COMMON_SKILLS.map(s => <label className="check" key={s}><input type="checkbox" name="skills" value={s} defaultChecked={selectedSkills.includes(s)} />{s}</label>)}</div></div>
       <div className="field"><label>Preferred job categories</label><div className="checks">{JOB_CATEGORIES.map(c => <label className="check" key={c}><input type="checkbox" name="preferred_categories" value={c} defaultChecked={selectedCategories.includes(c)} />{c}</label>)}</div></div>
-      <details><summary>Optional precise coordinates (improves distance matching)</summary><div className="formGrid" style={{marginTop:12}}><div className="field"><label>Latitude</label><input type="number" step="any" name="latitude" defaultValue={data?.latitude ?? ''} /></div><div className="field"><label>Longitude</label><input type="number" step="any" name="longitude" defaultValue={data?.longitude ?? ''} /></div></div></details>
+
+      <LocationPicker latitude={data?.latitude != null ? Number(data.latitude) : null} longitude={data?.longitude != null ? Number(data.longitude) : null} label="Home location" />
+
+      <div className="broadcastToggle">
+        <label className="toggleRow">
+          <input type="checkbox" name="show_availability_to_employers" defaultChecked={Boolean(data?.show_availability_to_employers)} />
+          <span>
+            <strong>Show my availability to employers</strong>
+            <small>Employers can see an anonymous card with your skills, salary range, hours, Damak ward and travel radius. Your name, phone and exact map location remain hidden until you apply.</small>
+          </span>
+        </label>
+      </div>
+
       <button className="button">Save profile</button>
     </form>
   </section>

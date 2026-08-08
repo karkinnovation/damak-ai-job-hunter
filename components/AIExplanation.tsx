@@ -57,9 +57,9 @@ export function AIExplanation({ jobId, candidateId, fallback, auto = false }: Pr
   return (
     <div className="aiExplanation" ref={rootRef}>
       <div className="aiExplanationHead">
-        <span className="aiBadge">✦AI Overview</span>
+        <span className="aiBadge">✦ Gemini AI</span>
         {status === 'loading' && <span className="aiStatus">Generating explanation…</span>}
-        {status === 'idle' && !auto && <button type="button" className="aiAction" onClick={() => void generate()}>Ask AI</button>}
+        {status === 'idle' && !auto && <button type="button" className="aiAction" onClick={() => void generate()}>Ask Gemini</button>}
       </div>
       <p>{text}</p>
     </div>

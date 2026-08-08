@@ -12,7 +12,7 @@ function formatDate(value: string) {
 export default async function Applications() {
   const { supabase, user } = await requireRole(['job_seeker'])
   const [{ data: apps }, { data: seeker }] = await Promise.all([
-    supabase.from('applications').select('id,status,created_at,job_id,jobs(*)').eq('job_seeker_id', user.id).order('created_at', { ascending: false }),
+    supabase.from('applications').select('id,status,created_at,job_id,distance_km,jobs(*)').eq('job_seeker_id', user.id).order('created_at', { ascending: false }),
     supabase.from('job_seeker_profiles').select('*').eq('user_id', user.id).maybeSingle(),
   ])
 
@@ -64,6 +64,7 @@ export default async function Applications() {
                 <div className="meta">
                   <span>Damak-{a.jobs?.ward}</span>
                   {a.match?.score != null && <span className="pill">{a.match.score}% match</span>}
+                  {a.distance_km != null && <span className="pill">{Number(a.distance_km).toFixed(1)} km away</span>}
                 </div>
               </div>
               <Link className="button secondary small" href={`/jobs/${a.jobs?.id}`}>View vacancy</Link>
