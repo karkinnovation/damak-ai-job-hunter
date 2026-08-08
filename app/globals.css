@@ -454,23 +454,10 @@ svg{flex:none}
 .eyebrow::before{display:inline-block;margin-right:7px;vertical-align:1px}
 
 /* ============================================================
-   Journey map: search, animated trail, distance readout
+   Journey map — deliberately minimal: a route, and one number.
    ============================================================ */
-.journeyMap{display:grid;gap:10px}
-.journeyCanvas{height:340px}
-
-.journeySearch{position:relative;z-index:5}
-.journeySearchBar{display:flex;gap:7px}
-.journeySearchBar input{flex:1;min-width:0;height:42px;padding:0 12px;border:1px solid #d0d5dd;border-radius:10px;background:#fff;outline:none;transition:border-color .15s,box-shadow .15s}
-.journeySearchBar input:focus{border-color:#9AA3E8;box-shadow:0 0 0 3px #E6E8FA}
-.journeySearchBar .button{flex:none}
-
-.journeyResults{position:absolute;top:48px;left:0;right:0;z-index:1000;list-style:none;margin:0;padding:6px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--e3);display:grid;gap:2px;max-height:260px;overflow:auto;animation:fadeInUp .2s var(--ease) both}
-.journeyResults button{display:grid;gap:2px;width:100%;text-align:left;padding:9px 10px;border:0;border-radius:8px;background:transparent;cursor:pointer;transition:background .12s ease}
-.journeyResults button:hover{background:var(--surface-soft)}
-.journeyResults strong{font-size:14px}
-.journeyResults span{font-size:12px;color:var(--muted)}
-.journeySearchStatus{margin:2px 0 0;font-size:12.5px}
+.journeyMap{display:grid;gap:12px}
+.journeyCanvas{height:320px}
 
 /* the dot travelling along the trail */
 .awasarTravellerWrap{background:transparent!important;border:0!important}
@@ -479,13 +466,30 @@ svg{flex:none}
 .awasarTraveller::before{content:'';position:absolute;inset:0;border-radius:50%;background:var(--gold);opacity:.35;animation:travellerPulse 1.4s ease-out infinite}
 @keyframes travellerPulse{0%{transform:scale(.5);opacity:.5}100%{transform:scale(1.6);opacity:0}}
 
-.awasarMapMarker.search{background:var(--gold2)}
-
-.journeyReadout{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
-.journeyProgress{display:flex;align-items:center;gap:10px;flex:1;min-width:200px;font-size:13px}
-.journeyProgress strong{font-family:var(--font-display),sans-serif;font-size:16px;color:var(--primary);letter-spacing:-.02em}
-.journeyBar{flex:1;min-width:70px;height:6px;border-radius:999px;background:#E7E9F4;overflow:hidden}
+.journeyReadout{display:grid;gap:8px}
+.journeyBar{height:6px;border-radius:999px;background:#E7E9F4;overflow:hidden}
 .journeyBar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--primary),var(--gold))}
+.journeyDistance{margin:0;font-size:13.5px;color:var(--muted)}
+.journeyDistance strong{font-family:var(--font-display),sans-serif;font-size:17px;color:var(--primary);letter-spacing:-.02em;margin-right:3px}
+
+/* ============================================================
+   Place search — used when setting a home or business address
+   ============================================================ */
+.placeSearch{position:relative}
+.placeSearchField{position:relative}
+.placeSearchField input{width:100%;height:44px;padding:0 38px 0 13px;border:1px solid #d0d5dd;border-radius:10px;background:#fff;color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s}
+.placeSearchField input:focus{border-color:#9AA3E8;box-shadow:0 0 0 3px #E6E8FA}
+.placeSearchSpinner{position:absolute;right:13px;top:50%;margin-top:-7px;width:14px;height:14px;border:2px solid #D5D9EC;border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
+
+.placeResults{position:absolute;top:48px;left:0;right:0;z-index:1000;list-style:none;margin:0;padding:5px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--e3);display:grid;gap:2px;max-height:250px;overflow:auto;animation:fadeInUp .18s var(--ease) both}
+.placeResults button{display:grid;gap:2px;width:100%;text-align:left;padding:9px 10px;border:0;border-radius:8px;background:transparent;cursor:pointer;transition:background .12s ease}
+.placeResults button:hover{background:var(--surface-soft)}
+.placeResults strong{font-size:14px;line-height:1.3}
+.placeResults span{font-size:12px;color:var(--muted);line-height:1.35}
+.placeSearchStatus{margin:6px 0 0;font-size:12.5px;line-height:1.5}
+
+.mapPickerHead{align-items:center}
+.mapPrivacyNote{margin:0;font-size:11.5px;line-height:1.5}
 
 /* ============================================================
    Insights page: sample banner, stats, charts
@@ -546,11 +550,6 @@ svg{flex:none}
   .statCard{padding:14px}
   .statValue{font-size:27px}
   .insightBlock{padding:18px}
-  .journeyCanvas{height:280px}
-  .journeySearchBar{flex-wrap:wrap}
-  .journeySearchBar input{flex:1 1 100%}
-  .journeySearchBar .button{flex:1}
-  .journeyReadout{align-items:stretch;flex-direction:column}
-  .journeyReadout .button{width:100%}
+  .journeyCanvas{height:270px}
   .insightHead{flex-direction:column;align-items:flex-start}
 }

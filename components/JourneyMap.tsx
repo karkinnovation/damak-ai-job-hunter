@@ -92,12 +92,9 @@ export function JourneyMap({
   const trailRef = useRef<any>(null)
   const travellerRef = useRef<any>(null)
   const rafRef = useRef<number | null>(null)
-  const searchMarkerRef = useRef<any>(null)
 
-  const [ready, setReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [progressKm, setProgressKm] = useState(0)
-  const [playing, setPlaying] = useState(false)
 
   const totalKm = haversineKm(home.latitude, home.longitude, work.latitude, work.longitude)
 
@@ -122,11 +119,9 @@ export function JourneyMap({
       trailRef.current?.setLatLngs([from, to])
       travellerRef.current?.setLatLng(to)
       setProgressKm(totalKm)
-      setPlaying(false)
       return
     }
 
-    setPlaying(true)
     const duration = 2200
     const start = performance.now()
 
@@ -146,7 +141,6 @@ export function JourneyMap({
         rafRef.current = requestAnimationFrame(step)
       } else {
         rafRef.current = null
-        setPlaying(false)
       }
     }
 
@@ -206,7 +200,6 @@ export function JourneyMap({
         map.fitBounds([from, to], { padding: [48, 48], maxZoom: 16 })
         mapRef.current = map
         setTimeout(() => map.invalidateSize(), 0)
-        setReady(true)
         setTimeout(runAnimation, 350)
       })
       .catch(() => setError('Map could not load. Check your internet connection.'))
@@ -224,145 +217,18 @@ export function JourneyMap({
 
   return (
     <div className="journeyMap">
-      <JourneySearch mapRef={mapRef} searchMarkerRef={searchMarkerRef} disabled={!ready} />
-
       <div id={`awasar-journey-${id}`} className="leafletMap journeyCanvas" aria-label={`Route from your home to ${workLabel}`} />
 
       <div className="journeyReadout">
-        <div className="journeyProgress">
-          <div className="journeyBar">
-            <span style={{ width: `${totalKm ? (progressKm / totalKm) * 100 : 0}%` }} />
-          </div>
-          <strong>{progressKm.toFixed(1)} km</strong>
-          <span className="muted">of {totalKm.toFixed(1)} km</span>
+        <div className="journeyBar" aria-hidden="true">
+          <span style={{ width: `${totalKm ? (progressKm / totalKm) * 100 : 0}%` }} />
         </div>
-        <button className="button secondary small" type="button" onClick={runAnimation} disabled={!ready || playing}>
-          {playing ? 'Playing…' : 'Replay route'}
-        </button>
+        <p className="journeyDistance">
+          <strong>{progressKm.toFixed(1)} km</strong> from your home
+        </p>
       </div>
 
       {error && <p className="error">{error}</p>}
-    </div>
-  )
-}
-
-/*
- * Search box layered over the map.
- *
- * Uses Nominatim (the same OpenStreetMap project already supplying the tiles),
- * biased to a bounding box around Jhapa so a search for "Damak" returns the
- * local place rather than a same-named town elsewhere. Results only move the
- * map view and drop a temporary marker — searching never edits a saved home
- * or workplace pin.
- */
-function JourneySearch({
-  mapRef,
-  searchMarkerRef,
-  disabled,
-}: {
-  mapRef: React.MutableRefObject<any>
-  searchMarkerRef: React.MutableRefObject<any>
-  disabled: boolean
-}) {
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState<any[]>([])
-  const [status, setStatus] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-
-  async function search(e: React.FormEvent) {
-    e.preventDefault()
-    const q = query.trim()
-    if (!q) return
-
-    setBusy(true)
-    setStatus(null)
-    setResults([])
-
-    try {
-      const url =
-        'https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=np' +
-        '&viewbox=87.40,26.90,88.20,26.30&bounded=0&q=' +
-        encodeURIComponent(q)
-
-      const res = await fetch(url, { headers: { Accept: 'application/json' } })
-      if (!res.ok) throw new Error('search failed')
-
-      const data = await res.json()
-      if (!Array.isArray(data) || data.length === 0) {
-        setStatus(`No places found for “${q}”. Try a landmark, ward or town name.`)
-      } else {
-        setResults(data)
-      }
-    } catch {
-      setStatus('Place search is unavailable right now. You can still pan and zoom the map.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  function goTo(item: any) {
-    const L = window.L
-    const map = mapRef.current
-    if (!L || !map) return
-
-    const lat = Number(item.lat)
-    const lng = Number(item.lon)
-
-    if (searchMarkerRef.current) {
-      searchMarkerRef.current.setLatLng([lat, lng])
-    } else {
-      searchMarkerRef.current = L.marker([lat, lng], { icon: pin(L, '★', 'search') }).addTo(map)
-    }
-    searchMarkerRef.current.bindTooltip(item.display_name.split(',')[0]).openTooltip()
-
-    map.setView([lat, lng], 15)
-    setResults([])
-    setQuery(item.display_name.split(',')[0])
-  }
-
-  function clear() {
-    const map = mapRef.current
-    if (searchMarkerRef.current && map) {
-      map.removeLayer(searchMarkerRef.current)
-      searchMarkerRef.current = null
-    }
-    setQuery('')
-    setResults([])
-    setStatus(null)
-  }
-
-  return (
-    <div className="journeySearch">
-      <form onSubmit={search} className="journeySearchBar">
-        <input
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          placeholder="Search a place on the map — e.g. Damak Bazaar"
-          aria-label="Search for a place on the map"
-          disabled={disabled}
-        />
-        <button className="button small" type="submit" disabled={disabled || busy}>
-          {busy ? 'Searching…' : 'Search'}
-        </button>
-        {(query || results.length > 0) && (
-          <button className="button secondary small" type="button" onClick={clear}>Clear</button>
-        )}
-      </form>
-
-      {results.length > 0 && (
-        <ul className="journeyResults">
-          {results.map(item => (
-            <li key={item.place_id}>
-              <button type="button" onClick={() => goTo(item)}>
-                <strong>{item.display_name.split(',')[0]}</strong>
-                <span>{item.display_name.split(',').slice(1, 3).join(',').trim()}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {status && <p className="journeySearchStatus muted">{status}</p>}
     </div>
   )
 }

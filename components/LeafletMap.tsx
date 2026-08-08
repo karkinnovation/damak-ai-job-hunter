@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { PlaceSearch, type PlaceResult } from '@/components/PlaceSearch'
 
 declare global {
   interface Window { L?: any; __awasarLeafletPromise?: Promise<any> }
@@ -70,7 +71,34 @@ export function LocationPicker({
   const markerRef = useRef<any>(null)
   const [lat, setLat] = useState<number | null>(latitude ?? null)
   const [lng, setLng] = useState<number | null>(longitude ?? null)
-  const [status, setStatus] = useState('Tap the map or drag the pin to choose the location.')
+  const [status, setStatus] = useState('Search your address above, or tap the map to drop a pin.')
+
+  /* Moves both the saved coordinates and the visible pin. Shared by place
+     search, "use current location" and map taps so all three behave alike. */
+  const setPin = useCallback((nextLat: number, nextLng: number, zoom = 16) => {
+    setLat(nextLat)
+    setLng(nextLng)
+    const L = window.L
+    const map = mapRef.current
+    if (!L || !map) return
+    if (!markerRef.current) {
+      markerRef.current = L.marker([nextLat, nextLng], { draggable: true, icon: pinIcon(L, '\u25cf', 'home') }).addTo(map)
+      markerRef.current.on('dragend', () => {
+        const p = markerRef.current.getLatLng()
+        setLat(Number(p.lat.toFixed(6)))
+        setLng(Number(p.lng.toFixed(6)))
+        setStatus('Pin moved. Drag it again to fine-tune.')
+      })
+    } else {
+      markerRef.current.setLatLng([nextLat, nextLng])
+    }
+    map.setView([nextLat, nextLng], zoom)
+  }, [])
+
+  function handlePick(place: PlaceResult) {
+    setPin(Number(place.latitude.toFixed(6)), Number(place.longitude.toFixed(6)))
+    setStatus(`Pin set to ${place.name}. Drag it if the exact spot is slightly off.`)
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -136,24 +164,11 @@ export function LocationPicker({
     setStatus('Getting your current location…')
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const nextLat = Number(position.coords.latitude.toFixed(6))
-        const nextLng = Number(position.coords.longitude.toFixed(6))
-        setLat(nextLat)
-        setLng(nextLng)
-        const L = window.L
-        const map = mapRef.current
-        if (L && map) {
-          if (!markerRef.current) {
-            markerRef.current = L.marker([nextLat, nextLng], { draggable: true, icon: pinIcon(L, '●', 'home') }).addTo(map)
-            markerRef.current.on('dragend', () => {
-              const p = markerRef.current.getLatLng()
-              setLat(Number(p.lat.toFixed(6)))
-              setLng(Number(p.lng.toFixed(6)))
-            })
-          } else markerRef.current.setLatLng([nextLat, nextLng])
-          map.setView([nextLat, nextLng], 16)
-        }
-        setStatus('Current location selected. You can drag the pin to fine-tune it.')
+        setPin(
+          Number(position.coords.latitude.toFixed(6)),
+          Number(position.coords.longitude.toFixed(6))
+        )
+        setStatus('Current location selected. Drag the pin to fine-tune it.')
       },
       () => setStatus('Could not access your location. Please choose it manually on the map.'),
       { enableHighAccuracy: true, timeout: 10000 }
@@ -163,19 +178,20 @@ export function LocationPicker({
   return (
     <div className="mapPicker">
       <div className="mapPickerHead">
-        <div>
-          <strong>{label}</strong>
-          <p className="muted">Only coordinates are stored. Anonymous employer browsing never receives your exact coordinates.</p>
-        </div>
+        <strong>{label}</strong>
         <button className="button secondary small" type="button" onClick={useCurrentLocation}>Use current location</button>
       </div>
+
+      <PlaceSearch onPick={handlePick} />
+
       <div id={`awasar-map-${id}`} className="leafletMap" aria-label={`${label} map picker`} />
       <input type="hidden" name="latitude" value={lat ?? ''} />
       <input type="hidden" name="longitude" value={lng ?? ''} />
       <div className="mapPickerStatus">
         <span>{status}</span>
-        {lat != null && lng != null && <span className="coordinateStatus">✓ Pin saved</span>}
+        {lat != null && lng != null && <span className="coordinateStatus">Pin set</span>}
       </div>
+      <p className="mapPrivacyNote muted">Only coordinates are stored. Anonymous employer browsing never receives your exact location.</p>
     </div>
   )
 }

@@ -84,6 +84,7 @@ export async function Nav() {
 
         {signedIn ? (
           <div className="navUser">
+            {profile?.full_name && <span className="navName">{profile.full_name}</span>}
             <form action="/logout" method="post">
               <button className="button secondary small" type="submit">Logout</button>
             </form>
