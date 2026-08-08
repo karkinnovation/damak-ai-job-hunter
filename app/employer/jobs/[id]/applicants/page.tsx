@@ -82,7 +82,9 @@ export default async function Applicants({ params }: { params: Promise<{ id: str
                   <h3>{r.profile?.full_name || 'Applicant'}</h3>
                   <p className="muted">{r.seeker.experience_months} months experience · Damak-{r.seeker.ward}</p>
                 </div>
-                <div className={`score score${Math.min(4, Math.floor(r.breakdown.score / 20))}`}>{r.breakdown.score}%<small>match</small></div>
+                <div className={`score score${Math.min(4, Math.floor(r.breakdown.score / 20))}`} style={{ ['--pct' as any]: r.breakdown.score }}>
+                  <div className="scoreInner">{r.breakdown.score}%<small>match</small></div>
+                </div>
               </div>
               <AIExplanation jobId={id} candidateId={r.app.job_seeker_id} fallback={fallback} auto={index < 2} />
               <div className="reasonGrid">

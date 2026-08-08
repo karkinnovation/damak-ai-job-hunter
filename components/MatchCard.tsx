@@ -19,7 +19,9 @@ export function MatchCard({ job, score, explanation, positives, mismatches }: Pr
           <h3>{job.title}</h3>
           <p className="muted">{job.business_name || 'Local employer'} · NPR {job.salary_min.toLocaleString()}–{job.salary_max.toLocaleString()}</p>
         </div>
-        <div className={`score score${Math.min(4, Math.floor(score / 20))}`}>{score}%<small>{label}</small></div>
+        <div className={`score score${Math.min(4, Math.floor(score / 20))}`} style={{ ['--pct' as any]: score }}>
+          <div className="scoreInner">{score}%<small>{label}</small></div>
+        </div>
       </div>
       {explanation}
       <div className="reasonGrid">

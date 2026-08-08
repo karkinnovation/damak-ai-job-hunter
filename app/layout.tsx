@@ -1,12 +1,14 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Space_Grotesk } from 'next/font/google'
 import './globals.css'
 import { Nav } from '@/components/Nav'
 
-// next/font self-hosts Inter at build time (no external request at runtime,
-// no layout shift) so the real brand font loads instantly and matches the
-// `font-family: Inter` already declared in globals.css.
-const inter = Inter({ subsets: ['latin'], display: 'swap' })
+// Two roles, deliberately different in character: Space Grotesk carries the
+// headlines (confident, geometric, a little technical — reads as "matching
+// engine"), Inter carries body copy and dense form UI where plain legibility
+// matters most for a broad, low-bandwidth audience.
+const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-body' })
+const display = Space_Grotesk({ subsets: ['latin'], display: 'swap', variable: '--font-display' })
 
 export const metadata: Metadata = {
   title: 'अवसर · Awasar',
@@ -15,8 +17,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className={`${inter.variable} ${display.variable}`}>
+      <body>
         <Nav />
         <main className="pageFade">{children}</main>
         <footer><b>अवसर · Awasar</b> — सही काम, सही अवसर. AI assists matching; employers make the final hiring decision.</footer>
