@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 
 export type PlaceResult = {
   id: string
@@ -8,19 +8,24 @@ export type PlaceResult = {
   address: string
   latitude: number
   longitude: number
+  source?: 'awasar' | 'osm'
 }
 
+type CachedSearch = {
+  savedAt: number
+  results: PlaceResult[]
+}
+
+const CACHE_TTL = 24 * 60 * 60 * 1000
+
 /*
- * Address search used when someone is setting their home or business
- * location. It calls /api/geocode, which does the actual lookup server-side
- * (see that route for why it can't run in the browser).
- *
- * Debounced so typing "Damak Bazaar" fires one request instead of eleven —
- * this matters both for Nominatim's rate limits and for anyone on mobile data.
+ * Deliberately uses an explicit Search button instead of autocomplete.
+ * This makes the UI predictable on slow mobile connections and avoids
+ * hammering the public OpenStreetMap/Nominatim service while somebody types.
  */
 export function PlaceSearch({
   onPick,
-  placeholder = 'Search your address or a nearby landmark',
+  placeholder = 'Search business, landmark or address',
 }: {
   onPick: (place: PlaceResult) => void
   placeholder?: string
@@ -33,72 +38,107 @@ export function PlaceSearch({
 
   const boxRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
-  const pickedRef = useRef(false)
 
-  // Close the dropdown when clicking elsewhere.
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
-      if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false)
+      if (boxRef.current && !boxRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
     }
+
     document.addEventListener('mousedown', onDocClick)
     return () => document.removeEventListener('mousedown', onDocClick)
   }, [])
 
-  useEffect(() => {
+  function cacheKey(value: string) {
+    return `awasar-place:${value.trim().toLowerCase()}`
+  }
+
+  function readCache(value: string) {
+    try {
+      const raw = sessionStorage.getItem(cacheKey(value))
+      if (!raw) return null
+      const cached = JSON.parse(raw) as CachedSearch
+      if (!cached.savedAt || Date.now() - cached.savedAt > CACHE_TTL) {
+        sessionStorage.removeItem(cacheKey(value))
+        return null
+      }
+      return cached.results || []
+    } catch {
+      return null
+    }
+  }
+
+  function writeCache(value: string, next: PlaceResult[]) {
+    try {
+      sessionStorage.setItem(
+        cacheKey(value),
+        JSON.stringify({ savedAt: Date.now(), results: next } satisfies CachedSearch)
+      )
+    } catch {
+      // Storage can be unavailable in private browsing. Search still works.
+    }
+  }
+
+  async function search(e?: FormEvent) {
+    e?.preventDefault()
     const q = query.trim()
 
-    // Don't re-search the text we just inserted after a pick.
-    if (pickedRef.current) {
-      pickedRef.current = false
-      return
-    }
-
-    if (q.length < 3) {
+    if (q.length < 2) {
       setResults([])
-      setStatus(null)
-      setBusy(false)
+      setOpen(false)
+      setStatus('Type at least 2 characters, for example “Damak Chowk” or a business name.')
       return
     }
 
-    const timer = setTimeout(async () => {
-      abortRef.current?.abort()
-      const controller = new AbortController()
-      abortRef.current = controller
-
-      setBusy(true)
+    const cached = readCache(q)
+    if (cached?.length) {
+      setResults(cached)
+      setOpen(true)
       setStatus(null)
+      return
+    }
 
-      try {
-        const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`, {
-          signal: controller.signal,
-        })
-        const data = await res.json()
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
 
-        if (!res.ok) {
-          setResults([])
-          setStatus(data?.error || 'Place search is temporarily unavailable.')
-        } else if (!data.results?.length) {
-          setResults([])
-          setStatus(`Nothing found for “${q}”. Try a landmark, ward or business name — or just tap the map below.`)
-        } else {
-          setResults(data.results)
-          setOpen(true)
-        }
-      } catch (err) {
-        if ((err as any)?.name !== 'AbortError') {
-          setResults([])
-          setStatus('Could not reach place search. You can still set the pin on the map below.')
-        }
-      } finally {
-        setBusy(false)
+    setBusy(true)
+    setStatus(null)
+
+    try {
+      const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`, {
+        signal: controller.signal,
+      })
+      const data = await res.json()
+      const next = (data.results || []) as PlaceResult[]
+
+      if (!res.ok) {
+        setResults([])
+        setOpen(false)
+        setStatus(data?.error || 'Place search is temporarily unavailable. You can still tap the map.')
+      } else if (!next.length) {
+        setResults([])
+        setOpen(false)
+        setStatus(`Nothing found for “${q}”. Try the business name plus “Damak”, a landmark, or tap the map.`)
+      } else {
+        setResults(next)
+        setOpen(true)
+        setStatus(null)
+        writeCache(q, next)
       }
-    }, 450)
-
-    return () => clearTimeout(timer)
-  }, [query])
+    } catch (err) {
+      if ((err as Error)?.name !== 'AbortError') {
+        setResults([])
+        setOpen(false)
+        setStatus('Could not reach place search. You can still drop the pin directly on the map.')
+      }
+    } finally {
+      setBusy(false)
+    }
+  }
 
   function pick(place: PlaceResult) {
-    pickedRef.current = true
     setQuery(place.name)
     setResults([])
     setOpen(false)
@@ -108,24 +148,29 @@ export function PlaceSearch({
 
   return (
     <div className="placeSearch" ref={boxRef}>
-      <div className="placeSearchField">
+      <form className="placeSearchField" onSubmit={search}>
         <input
           value={query}
-          onChange={e => { setQuery(e.target.value); setOpen(true) }}
-          onFocus={() => results.length && setOpen(true)}
+          onChange={e => setQuery(e.target.value)}
+          onFocus={() => results.length > 0 && setOpen(true)}
           placeholder={placeholder}
-          aria-label="Search for an address or place"
+          aria-label="Search for an address, landmark or business"
           autoComplete="off"
         />
-        {busy && <span className="placeSearchSpinner" aria-hidden="true" />}
-      </div>
+        <button type="submit" className="placeSearchButton" disabled={busy}>
+          {busy ? <span className="placeSearchSpinner" aria-hidden="true" /> : 'Search'}
+        </button>
+      </form>
 
       {open && results.length > 0 && (
         <ul className="placeResults">
           {results.map(place => (
             <li key={place.id}>
               <button type="button" onClick={() => pick(place)}>
-                <strong>{place.name}</strong>
+                <span className="placeResultTitle">
+                  <strong>{place.name}</strong>
+                  {place.source === 'awasar' && <em>On Awasar</em>}
+                </span>
                 {place.address && <span>{place.address}</span>}
               </button>
             </li>

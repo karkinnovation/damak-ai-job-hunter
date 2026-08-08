@@ -27,6 +27,12 @@ function salaryMatches(job: any, salaryRange: string) {
   return true
 }
 
+
+function businessName(job: any) {
+  const business = Array.isArray(job.businesses) ? job.businesses[0] : job.businesses
+  return business?.business_name || ''
+}
+
 function employmentLabel(value: string) {
   return String(value || '')
     .split('_')
@@ -41,6 +47,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   const category = (params.category || '').trim()
   const skill = normalize(params.skill)
   const salaryRange = (params.salaryRange || '').trim()
+  const isFiltering = Boolean(q || category || skill || salaryRange)
 
   const supabase = await createClient()
   const { data } = await supabase
@@ -48,11 +55,11 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     .select('id,title,description,category,ward,salary_min,salary_max,employment_type,required_skills,preferred_skills,created_at,businesses(business_name)')
     .eq('status', 'open')
     .order('created_at', { ascending: false })
-    .limit(50)
+    .limit(isFiltering ? 180 : 50)
 
   const jobs = (data || []).filter((job: any) => {
     const skills = [...(job.required_skills || []), ...(job.preferred_skills || [])]
-    const haystack = `${job.title} ${job.description || ''} ${job.category} ${job.businesses?.business_name || ''} ${skills.join(' ')}`.toLowerCase()
+    const haystack = `${job.title} ${job.description || ''} ${job.category} ${businessName(job)} ${skills.join(' ')}`.toLowerCase()
     const skillHaystack = skills.join(' ').toLowerCase()
 
     return (
@@ -63,7 +70,6 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     )
   }).slice(0, 12)
 
-  const isFiltering = Boolean(q || category || skill || salaryRange)
   const popular = ['Retail / Sales', 'Accounting / Finance', 'Computer Operator', 'IT / Software']
 
   return (
@@ -127,10 +133,10 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
           {jobs.length ? jobs.map((job: any) => (
             <article className="card vacancyCard" key={job.id}>
               <div className="vacancyHead">
-                <CompanyMark name={job.businesses?.business_name} />
+                <CompanyMark name={businessName(job)} />
                 <div className="vacancyHeadText">
                   <h3><Link href={`/jobs/${job.id}`}>{job.title}</Link></h3>
-                  <p className="companyName">{job.businesses?.business_name || 'Local employer'}</p>
+                  <p className="companyName">{businessName(job) || 'Local employer'}</p>
                 </div>
               </div>
 

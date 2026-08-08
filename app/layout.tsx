@@ -19,6 +19,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${inter.variable} ${display.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://unpkg.com" />
+        <link rel="dns-prefetch" href="https://unpkg.com" />
+        <link rel="preconnect" href="https://a.tile.openstreetmap.org" />
+        <link rel="dns-prefetch" href="https://nominatim.openstreetmap.org" />
+      </head>
       <body>
         <Nav />
         <main className="pageFade">{children}</main>

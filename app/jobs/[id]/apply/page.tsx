@@ -167,7 +167,7 @@ export default async function ApplyPreview({ params, searchParams }: { params: P
           </div>
 
           <div className="card mapPreviewCard">
-            <h3>Home → workplace</h3>
+            <h3>Your route to {business?.business_name || 'the workplace'}</h3>
             <p className="muted">Straight-line distance, the same measure used in your match score. The green ring is your preferred travel radius.</p>
             <JourneyMap
               home={{ latitude: homeLat!, longitude: homeLng! }}

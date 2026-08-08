@@ -29,7 +29,7 @@ export default async function EmployerProfile({ searchParams }: { searchParams: 
       <div className="field"><label>Business name</label><input name="business_name" defaultValue={data?.business_name || ''} required /></div>
       <div className="formGrid"><div className="field"><label>Business type</label><input name="business_type" placeholder="e.g. Electronics shop" defaultValue={data?.business_type || ''} required /></div><div className="field"><label>Damak ward</label><input type="number" min="1" max="10" name="ward" defaultValue={data?.ward || 5} required /></div></div>
       <div className="field"><label>Phone</label><input name="phone" defaultValue={data?.phone || ''} required /></div>
-      <LocationPicker latitude={data?.latitude != null ? Number(data.latitude) : null} longitude={data?.longitude != null ? Number(data.longitude) : null} label="Workplace location" />
+      <LocationPicker latitude={data?.latitude != null ? Number(data.latitude) : null} longitude={data?.longitude != null ? Number(data.longitude) : null} label={data?.business_name ? `${data.business_name} workplace` : 'Workplace location'} liveLabelInputName="business_name" />
       <button className="button">Save business profile</button>
     </form>
   </section>

@@ -27,6 +27,12 @@ function salaryMatches(job: any, salaryRange: string) {
   return true
 }
 
+
+function businessName(job: any) {
+  const business = Array.isArray(job.businesses) ? job.businesses[0] : job.businesses
+  return business?.business_name || ''
+}
+
 function employmentLabel(value: string) {
   return String(value || '')
     .split('_')
@@ -41,6 +47,7 @@ export default async function Jobs({ searchParams }: { searchParams: SearchParam
   const category = (params.category || '').trim()
   const skill = normalize(params.skill)
   const salaryRange = (params.salaryRange || '').trim()
+  const isFiltering = Boolean(q || category || skill || salaryRange)
 
   const supabase = await createClient()
   const { data } = await supabase
@@ -48,11 +55,11 @@ export default async function Jobs({ searchParams }: { searchParams: SearchParam
     .select('id,title,description,category,ward,salary_min,salary_max,employment_type,working_start,working_end,required_skills,preferred_skills,businesses(business_name)')
     .eq('status','open')
     .order('created_at',{ascending:false})
-    .limit(100)
+    .limit(isFiltering ? 200 : 100)
 
   const jobs = (data || []).filter((job: any) => {
     const skills = [...(job.required_skills || []), ...(job.preferred_skills || [])]
-    const haystack = `${job.title} ${job.description || ''} ${job.category} ${job.businesses?.business_name || ''} ${skills.join(' ')}`.toLowerCase()
+    const haystack = `${job.title} ${job.description || ''} ${job.category} ${businessName(job)} ${skills.join(' ')}`.toLowerCase()
     const skillHaystack = skills.join(' ').toLowerCase()
     return (
       (!q || haystack.includes(q)) &&
@@ -93,12 +100,12 @@ export default async function Jobs({ searchParams }: { searchParams: SearchParam
         {jobs.length ? jobs.map((j:any) => (
           <article className="card jobRow" key={j.id}>
             <div className="jobRowMain">
-              <CompanyMark name={j.businesses?.business_name} size={48} />
+              <CompanyMark name={businessName(j)} size={48} />
               <div className="jobRowText">
                 <span className="categoryPill">{j.category}</span>
                 <h3><Link href={`/jobs/${j.id}`}>{j.title}</Link></h3>
                 <div className="meta">
-                  <span>{j.businesses?.business_name || 'Local employer'}</span>
+                  <span>{businessName(j) || 'Local employer'}</span>
                   <span><IconMapPin size={13} /> Damak-{j.ward}</span>
                   <span><IconWallet size={13} /> NPR {money(j.salary_min)}–{money(j.salary_max)}</span>
                   <span><IconBriefcase size={13} /> {employmentLabel(j.employment_type)}</span>

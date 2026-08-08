@@ -1,22 +1,18 @@
 import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 
 /*
- * Server-side place search.
+ * Free place search for profile map pickers.
  *
- * This runs on the server rather than in the browser for three reasons:
- *
- *  1. Nominatim's usage policy requires a User-Agent that identifies the
- *     application. Browsers forbid setting User-Agent from fetch(), so
- *     browser-side calls get rejected — this was why search silently failed.
- *  2. A Google Places key must never reach the client.
- *  3. One place to swap providers without touching any UI.
- *
- * Provider: Google Places if GOOGLE_MAPS_API_KEY is set (returns the business
- * names people know from Google Maps), otherwise OpenStreetMap's Nominatim,
- * which also indexes shops and businesses but with thinner local coverage.
+ * 1) Search Awasar's own registered businesses first. This guarantees that a
+ *    business already using Awasar can be found by name even if OpenStreetMap
+ *    does not contain that business yet.
+ * 2) Fall back to OpenStreetMap/Nominatim for landmarks and addresses.
+ * 3) Nominatim is called only after an explicit user search (no autocomplete).
  */
 
 export const runtime = 'nodejs'
+export const preferredRegion = 'auto'
 
 type Place = {
   id: string
@@ -24,57 +20,78 @@ type Place = {
   address: string
   latitude: number
   longitude: number
+  source: 'awasar' | 'osm'
 }
 
-// Bias toward Jhapa so "Damak" finds the local town, not a same-named place.
-const JHAPA = { lat: 26.66, lng: 87.7, radiusMeters: 40000 }
+let lastNominatimRequestAt = 0
+let nominatimQueue: Promise<void> = Promise.resolve()
 
-async function searchGoogle(query: string, key: string): Promise<Place[]> {
-  const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Goog-Api-Key': key,
-      'X-Goog-FieldMask':
-        'places.id,places.displayName,places.formattedAddress,places.location',
-    },
-    body: JSON.stringify({
-      textQuery: query,
-      regionCode: 'NP',
-      maxResultCount: 6,
-      locationBias: {
-        circle: {
-          center: { latitude: JHAPA.lat, longitude: JHAPA.lng },
-          radius: JHAPA.radiusMeters,
-        },
-      },
-    }),
-  })
+function cleanQuery(value: string) {
+  return value.replace(/[%,]/g, ' ').replace(/\s+/g, ' ').trim()
+}
 
-  if (!res.ok) throw new Error(`google ${res.status}`)
-  const data = await res.json()
+async function searchAwasarBusinesses(query: string): Promise<Place[]> {
+  try {
+    const supabase = await createClient()
+    const { data: claimsData } = await supabase.auth.getClaims()
+    if (!claimsData?.claims?.sub) return []
 
-  return (data.places || []).map((p: any) => ({
-    id: p.id,
-    name: p.displayName?.text || p.formattedAddress || 'Unnamed place',
-    address: p.formattedAddress || '',
-    latitude: p.location?.latitude,
-    longitude: p.location?.longitude,
-  })).filter((p: Place) => p.latitude != null && p.longitude != null)
+    const safe = cleanQuery(query)
+    const { data, error } = await supabase
+      .from('businesses')
+      .select('id,business_name,ward,city,latitude,longitude')
+      .ilike('business_name', `%${safe}%`)
+      .not('latitude', 'is', null)
+      .not('longitude', 'is', null)
+      .limit(5)
+
+    if (error) return []
+
+    return (data || []).map((business: any) => ({
+      id: `awasar-${business.id}`,
+      name: business.business_name,
+      address: `${business.city || 'Damak'}-${business.ward}, Jhapa`,
+      latitude: Number(business.latitude),
+      longitude: Number(business.longitude),
+      source: 'awasar' as const,
+    })).filter((place: Place) => Number.isFinite(place.latitude) && Number.isFinite(place.longitude))
+  } catch {
+    return []
+  }
+}
+
+async function waitForNominatimSlot() {
+  const previous = nominatimQueue
+  let release!: () => void
+  nominatimQueue = new Promise<void>(resolve => { release = resolve })
+  await previous
+
+  const wait = Math.max(0, 1050 - (Date.now() - lastNominatimRequestAt))
+  if (wait) await new Promise(resolve => setTimeout(resolve, wait))
+  lastNominatimRequestAt = Date.now()
+  release()
 }
 
 async function searchNominatim(query: string): Promise<Place[]> {
+  await waitForNominatimSlot()
+
+  const q = /damak|jhapa|nepal/i.test(query)
+    ? query
+    : `${query}, Damak, Jhapa, Nepal`
+
   const url =
     'https://nominatim.openstreetmap.org/search' +
-    '?format=jsonv2&limit=6&addressdetails=1&countrycodes=np' +
-    `&viewbox=87.35,26.95,88.25,26.25&q=${encodeURIComponent(query)}`
+    '?format=jsonv2&limit=6&addressdetails=1&countrycodes=np&bounded=0' +
+    '&viewbox=87.35,26.95,88.25,26.25' +
+    `&q=${encodeURIComponent(q)}`
 
   const res = await fetch(url, {
     headers: {
-      // Required by the Nominatim usage policy.
-      'User-Agent': 'Awasar/1.0 (job board for Damak, Jhapa, Nepal)',
+      'User-Agent': 'Awasar/1.0 (hyperlocal job matching for Damak, Jhapa, Nepal)',
       Accept: 'application/json',
+      'Accept-Language': 'en',
     },
+    next: { revalidate: 86400 },
   })
 
   if (!res.ok) throw new Error(`nominatim ${res.status}`)
@@ -84,46 +101,57 @@ async function searchNominatim(query: string): Promise<Place[]> {
     const full: string = item.display_name || ''
     const parts = full.split(',').map((s: string) => s.trim())
     return {
-      id: String(item.place_id),
+      id: `osm-${item.osm_type || 'place'}-${item.osm_id || item.place_id}`,
       name: item.name || parts[0] || 'Unnamed place',
-      address: parts.slice(1, 4).join(', '),
+      address: parts.slice(1, 5).join(', '),
       latitude: Number(item.lat),
       longitude: Number(item.lon),
+      source: 'osm' as const,
     }
   }).filter((p: Place) => Number.isFinite(p.latitude) && Number.isFinite(p.longitude))
 }
 
-export async function GET(request: Request) {
-  const query = new URL(request.url).searchParams.get('q')?.trim() || ''
+function dedupePlaces(places: Place[]) {
+  const seen = new Set<string>()
+  return places.filter(place => {
+    const key = `${place.name.toLowerCase()}-${place.latitude.toFixed(4)}-${place.longitude.toFixed(4)}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
 
-  if (query.length < 3) {
+export async function GET(request: Request) {
+  const query = cleanQuery(new URL(request.url).searchParams.get('q') || '')
+
+  if (query.length < 2) {
     return NextResponse.json({ results: [] })
   }
 
-  const googleKey = process.env.GOOGLE_MAPS_API_KEY
-
   try {
-    const results = googleKey
-      ? await searchGoogle(query, googleKey)
-      : await searchNominatim(query)
+    const local = await searchAwasarBusinesses(query)
+
+    // Registered Awasar businesses are authoritative for our own employer pins
+    // and return immediately. Only use the public OSM service when Awasar has
+    // no matching business, which keeps search faster and reduces API traffic.
+    let osm: Place[] = []
+    if (local.length === 0) {
+      try {
+        osm = await searchNominatim(query)
+      } catch {
+        // The user can still drop a pin directly on the map.
+      }
+    }
+
+    const results = dedupePlaces([...local, ...osm]).slice(0, 8)
 
     return NextResponse.json(
-      { results, provider: googleKey ? 'google' : 'osm' },
+      { results, provider: local.length ? 'awasar+osm' : 'osm' },
       { headers: { 'Cache-Control': 'private, max-age=300' } }
     )
   } catch {
-    // If Google is configured but failing (bad key, quota), still try OSM
-    // rather than leaving the user with a dead search box.
-    if (googleKey) {
-      try {
-        const results = await searchNominatim(query)
-        return NextResponse.json({ results, provider: 'osm' })
-      } catch {
-        /* fall through */
-      }
-    }
     return NextResponse.json(
-      { results: [], error: 'Place search is temporarily unavailable.' },
+      { results: [], error: 'Place search is temporarily unavailable. You can still select the pin directly on the map.' },
       { status: 503 }
     )
   }

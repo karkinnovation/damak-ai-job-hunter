@@ -553,3 +553,68 @@ svg{flex:none}
   .journeyCanvas{height:270px}
   .insightHead{flex-direction:column;align-items:flex-start}
 }
+
+/* ============================================================
+   v11 — responsiveness, map clarity and faster-feeling navigation
+   ============================================================ */
+
+/* Earlier long stagger delays made a finished server response look slow.
+   Keep motion, but finish it almost immediately. */
+.pageFade,main{animation-duration:.16s!important}
+.jobHero,.hero,.authPage>*{animation-duration:.26s!important}
+.card,.matchCard,.jobRow,.vacancyCard,.dashboardMatchCard,.applicationCard{animation-duration:.24s!important;animation-delay:0s!important}
+.list>*:nth-child(2),.grid>*:nth-child(2),.grid2>*:nth-child(2),.vacancyGrid>*:nth-child(2),.bestMatchGrid>*:nth-child(2),.applicationList>*:nth-child(2),.featureGrid>*:nth-child(2){animation-delay:.025s!important}
+.list>*:nth-child(3),.grid>*:nth-child(3),.grid2>*:nth-child(3),.vacancyGrid>*:nth-child(3),.bestMatchGrid>*:nth-child(3),.applicationList>*:nth-child(3),.featureGrid>*:nth-child(3){animation-delay:.05s!important}
+.list>*:nth-child(4),.grid>*:nth-child(4),.grid2>*:nth-child(4),.vacancyGrid>*:nth-child(4),.bestMatchGrid>*:nth-child(4),.applicationList>*:nth-child(4),.featureGrid>*:nth-child(4){animation-delay:.07s!important}
+.list>*:nth-child(n+5),.grid>*:nth-child(n+5),.grid2>*:nth-child(n+5),.vacancyGrid>*:nth-child(n+5),.bestMatchGrid>*:nth-child(n+5),.applicationList>*:nth-child(n+5),.featureGrid>*:nth-child(n+5){animation-delay:.07s!important}
+
+/* Instant route feedback while a Server Component is loading. */
+.routeLoading{width:min(1120px,calc(100% - 32px));margin:0 auto;padding:28px 0 60px;display:grid;gap:14px}
+.routeLoadingBar{position:fixed;top:68px;left:0;right:0;height:3px;z-index:60;overflow:hidden;background:rgba(34,41,122,.08)}
+.routeLoadingBar::after{content:'';display:block;width:38%;height:100%;background:linear-gradient(90deg,var(--primary),var(--gold));animation:routeLoad 1s ease-in-out infinite}
+.routeLoadingHero{height:86px;width:min(560px,80%)}
+.routeLoadingGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.routeLoadingCard{height:126px}
+@keyframes routeLoad{0%{transform:translateX(-110%)}100%{transform:translateX(320%)}}
+
+/* Explicit place search: clearer and compliant with public OSM search limits. */
+.placeSearchField{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.placeSearchField input{padding:0 13px}
+.placeSearchButton{height:44px;min-width:84px;border:1px solid var(--primary);border-radius:10px;background:var(--primary);color:#fff;font-weight:800;padding:0 13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .12s ease,background .15s ease}
+.placeSearchButton:hover{background:var(--primary2);transform:translateY(-1px)}
+.placeSearchButton:disabled{opacity:.7;cursor:wait;transform:none}
+.placeSearchButton .placeSearchSpinner{position:static;margin:0;border-color:rgba(255,255,255,.4);border-top-color:#fff}
+.placeResultTitle{display:flex!important;align-items:center;justify-content:space-between;gap:10px;color:var(--text)!important}
+.placeResultTitle em{font-style:normal;font-size:10px;font-weight:800;color:var(--good);background:#EAF8F1;padding:3px 6px;border-radius:999px;white-space:nowrap}
+
+.mapPicker{display:grid;gap:10px}
+.mapPickerHead{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.mapPickerHead>div{display:grid;gap:3px}
+.mapPickerHint{font-size:12px;color:var(--muted);font-weight:500}
+.mapExternalActions,.mapRouteActions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.mapTextLink{font-size:12.5px;font-weight:750;color:var(--primary);text-decoration:underline;text-decoration-color:rgba(34,41,122,.25);text-underline-offset:3px}
+.mapTextLink:hover{text-decoration-color:var(--primary)}
+.streetViewHint{font-size:11.5px;line-height:1.45;margin:0}
+
+/* Always-visible labels solve the problem where business names only appeared
+   on hover/tap. */
+.awasarMapLabel{border:1px solid rgba(22,26,51,.12)!important;border-radius:8px!important;background:rgba(255,255,255,.96)!important;color:var(--text)!important;box-shadow:0 5px 15px rgba(22,26,51,.14)!important;font-family:var(--font-body),sans-serif!important;font-size:11.5px!important;font-weight:800!important;line-height:1.2!important;padding:5px 7px!important;max-width:190px!important;white-space:normal!important;text-align:center!important}
+.awasarMapLabel::before{display:none!important}
+.awasarBusinessLabel{border-color:rgba(34,41,122,.24)!important;color:var(--primary)!important}
+.leafletMap{overflow:hidden;isolation:isolate}
+.leaflet-control-attribution{font-size:9px!important}
+
+/* Search feedback/result cards are easier to scan on touch devices. */
+.filterSummary{animation:fadeIn .16s ease both}
+.jobRow,.vacancyCard{will-change:transform}
+.jobRow:active,.vacancyCard:active{transform:scale(.995)}
+
+@media(max-width:760px){
+  .routeLoadingGrid{grid-template-columns:1fr}
+  .routeLoadingBar{top:66px}
+  .mapPickerHead{flex-direction:column}
+  .mapPickerHead .button{width:100%}
+  .placeSearchField{grid-template-columns:1fr}
+  .placeSearchButton{width:100%}
+  .mapRouteActions .button{flex:1 1 150px}
+}
