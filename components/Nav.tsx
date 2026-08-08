@@ -16,29 +16,30 @@ export async function Nav() {
 
   return (
     <header className="nav">
-      <Link className="brand" href="/" aria-label="Awasar home">
-        <div
+<Link
+  className="brand"
+  href="/"
+  aria-label="Awasar home"
   style={{
-    width: '150px',
-    height: '50px',
-    overflow: 'hidden',
     display: 'flex',
     alignItems: 'center',
+    width: '180px',
+    height: '52px',
+    overflow: 'hidden',
   }}
 >
-<img
-  src="/awasar.png"
-  alt="Awasar"
-  style={{
-    width: '150px',
-    height: '48px',
-    objectFit: 'cover',
-    objectPosition: 'center',
-    display: 'block',
-  }}
-/>
-</div>
-      </Link>
+  <img
+    src="/awasar.png"
+    alt="Awasar"
+    style={{
+      width: '180px',
+      height: '52px',
+      objectFit: 'contain',
+      objectPosition: 'left center',
+      display: 'block',
+    }}
+  />
+</Link>
       <nav className="navLinks" aria-label="Main navigation">
         <Link href="/jobs">Find Jobs</Link>
         {profile?.role === 'job_seeker' && <>
