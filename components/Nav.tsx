@@ -17,11 +17,27 @@ export async function Nav() {
   return (
     <header className="nav">
       <Link className="brand" href="/" aria-label="Awasar home">
-        <img
-  src="/awasar.png"
-  alt="Awasar"
-  className="brand-logo"
-/>
+        <div
+  style={{
+    width: '150px',
+    height: '50px',
+    overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'center',
+  }}
+>
+  <img
+    src="/awasar.png"
+    alt="Awasar"
+    style={{
+      width: '150px',
+      height: '150px',
+      objectFit: 'contain',
+      transform: 'scale(2.5)',
+      transformOrigin: 'left center',
+    }}
+  />
+</div>
       </Link>
       <nav className="navLinks" aria-label="Main navigation">
         <Link href="/jobs">Find Jobs</Link>
