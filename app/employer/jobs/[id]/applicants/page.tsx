@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { requireRole } from '@/lib/auth'
 import { calculateMatch, fallbackExplanation } from '@/lib/matching'
 import { AIExplanation } from '@/components/AIExplanation'
+import { ApplicationStatus } from '@/components/ApplicationStatus'
 
 async function setStatus(formData: FormData) {
   'use server'
@@ -88,7 +89,7 @@ export default async function Applicants({ params }: { params: Promise<{ id: str
                 <div>{r.breakdown.positives.slice(0, 3).map((x, i) => <p className="positive" key={i}>✓ {x}</p>)}</div>
                 <div>{r.breakdown.mismatches.slice(0, 2).map((x, i) => <p className="warning" key={i}>⚠ {x}</p>)}</div>
               </div>
-              <p><span className="pill">Current: {r.app.status}</span></p>
+              <p><span className="muted">Candidate status: </span><ApplicationStatus status={r.app.status} compact /></p>
               <div className="heroActions">
                 <form action={setStatus}><input type="hidden" name="application_id" value={r.app.id} /><input type="hidden" name="job_id" value={id} /><input type="hidden" name="status" value="shortlisted" /><button className="button">Shortlist</button></form>
                 <form action={setStatus}><input type="hidden" name="application_id" value={r.app.id} /><input type="hidden" name="job_id" value={id} /><input type="hidden" name="status" value="reviewed" /><button className="button secondary">Mark reviewed</button></form>

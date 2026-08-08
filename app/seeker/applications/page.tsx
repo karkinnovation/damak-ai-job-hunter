@@ -1,6 +1,13 @@
 import Link from 'next/link'
 import { requireRole } from '@/lib/auth'
 import { calculateMatch, fallbackExplanation } from '@/lib/matching'
+import { ApplicationStatus } from '@/components/ApplicationStatus'
+
+export const dynamic = 'force-dynamic'
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat('en-NP', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(value))
+}
 
 export default async function Applications() {
   const { supabase, user } = await requireRole(['job_seeker'])
@@ -36,5 +43,44 @@ export default async function Applications() {
     return { ...app, match: { score: breakdown.score, explanation: fallbackExplanation(breakdown.score, breakdown.positives, breakdown.mismatches) } }
   })
 
-  return <section className="container"><div className="sectionHeader"><div><span className="eyebrow">Job seeker</span><h1>My applications</h1><p className="muted">Track applications and revisit the compatibility behind each choice.</p></div><Link className="button" href="/seeker/hunt">AI Match</Link></div><div className="list">{rows.length ? rows.map((a: any) => <article className="card jobRow" key={a.id}><div><h3>{a.jobs?.title}</h3><div className="meta"><span>Damak-{a.jobs?.ward}</span><span className="pill">{a.status}</span>{a.match?.score != null && <span className="pill">{a.match.score}% match</span>}</div>{a.match?.explanation && <p className="muted applicationReason">{a.match.explanation}</p>}</div><Link className="button secondary" href={`/jobs/${a.jobs?.id}`}>View</Link></article>) : <div className="card empty"><h3>No applications yet</h3><p className="muted">Find your best matches and apply to a suitable vacancy.</p><Link className="button" href="/seeker/hunt">Find matches</Link></div>}</div></section>
+  return (
+    <section className="container">
+      <div className="sectionHeader">
+        <div>
+          <span className="eyebrow">Job seeker</span>
+          <h1>My applications</h1>
+          <p className="muted">See what you applied for, your current employer-updated status, and the match behind each choice.</p>
+        </div>
+        <Link className="button" href="/seeker/hunt">✦ Find my best matches</Link>
+      </div>
+
+      <div className="list applicationList">
+        {rows.length ? rows.map((a: any) => (
+          <article className="card applicationCard" key={a.id}>
+            <div className="applicationCardTop">
+              <div>
+                <span className="eyebrow">Applied {formatDate(a.created_at)}</span>
+                <h3>{a.jobs?.title}</h3>
+                <div className="meta">
+                  <span>Damak-{a.jobs?.ward}</span>
+                  {a.match?.score != null && <span className="pill">{a.match.score}% match</span>}
+                </div>
+              </div>
+              <Link className="button secondary small" href={`/jobs/${a.jobs?.id}`}>View vacancy</Link>
+            </div>
+
+            <ApplicationStatus status={a.status} />
+
+            {a.match?.explanation && <p className="muted applicationReason">{a.match.explanation}</p>}
+          </article>
+        )) : (
+          <div className="card empty">
+            <h3>No applications yet</h3>
+            <p className="muted">Find your best matches and apply to a suitable vacancy.</p>
+            <Link className="button" href="/seeker/hunt">Find matches</Link>
+          </div>
+        )}
+      </div>
+    </section>
+  )
 }
