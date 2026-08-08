@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { JOB_CATEGORIES } from '@/lib/constants'
+import RefreshFilterReset from '@/components/RefreshFilterReset'
 
 type SearchParams = Promise<{ q?: string; category?: string; skill?: string; minSalary?: string }>
 
@@ -41,11 +42,12 @@ export default async function Jobs({ searchParams }: { searchParams: SearchParam
 
   return (
     <section className="container">
+      <RefreshFilterReset basePath="/jobs" />
       <div className="sectionHeader">
         <div>
           <span className="eyebrow">Local vacancies</span>
           <h1>Find a job</h1>
-          <p className="muted">Search by title, company, category, skill or salary. Sign in for compatibility-ranked matches.</p>
+          <p className="muted">Search by title or company, choose a category, set your expected salary, then add a skill only if you want to narrow it further.</p>
         </div>
         <Link className="button" href="/seeker/hunt">✦ Find my best matches</Link>
       </div>
@@ -53,12 +55,12 @@ export default async function Jobs({ searchParams }: { searchParams: SearchParam
       <form className="jobSearch compactSearch" action="/jobs" method="get">
         <div className="searchMain"><span className="searchIcon" aria-hidden="true">⌕</span><input name="q" defaultValue={params.q || ''} placeholder="Search title, skill or company" /></div>
         <select name="category" defaultValue={category}><option value="">All categories</option>{JOB_CATEGORIES.map(item => <option key={item} value={item}>{item}</option>)}</select>
-        <input name="skill" defaultValue={params.skill || ''} placeholder="Skill e.g. Excel" />
-        <select name="minSalary" defaultValue={params.minSalary || ''}>
-          <option value="">Any salary</option>
-          <option value="15000">NPR 15,000+</option><option value="20000">NPR 20,000+</option><option value="25000">NPR 25,000+</option><option value="30000">NPR 30,000+</option><option value="40000">NPR 40,000+</option>
+        <select name="minSalary" defaultValue={params.minSalary || ''} aria-label="Expected salary">
+          <option value="">Expected salary</option>
+          <option value="15000">At least NPR 15,000</option><option value="20000">At least NPR 20,000</option><option value="25000">At least NPR 25,000</option><option value="30000">At least NPR 30,000</option><option value="40000">At least NPR 40,000</option>
         </select>
-        <button className="button" type="submit">Search</button>
+        <input name="skill" defaultValue={params.skill || ''} placeholder="Skill (optional), e.g. Excel" />
+        <button className="button" type="submit">Find jobs</button>
       </form>
 
       {(q || category || skill || minSalary) && <div className="filterSummary"><span>{jobs.length} result{jobs.length === 1 ? '' : 's'}</span><Link href="/jobs">Clear filters</Link></div>}

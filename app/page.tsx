@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { JOB_CATEGORIES } from '@/lib/constants'
+import RefreshFilterReset from '@/components/RefreshFilterReset'
 
 type SearchParams = Promise<{ q?: string; category?: string; skill?: string; minSalary?: string }>
 
@@ -45,6 +46,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
 
   return (
     <>
+      <RefreshFilterReset basePath="/" />
       <section className="jobHero">
         <div className="jobHeroInner">
           <div className="heroCopy">
@@ -62,16 +64,16 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
               <option value="">All categories</option>
               {JOB_CATEGORIES.map(item => <option key={item} value={item}>{item}</option>)}
             </select>
-            <input name="skill" defaultValue={params.skill || ''} placeholder="Skill e.g. Excel" aria-label="Required skill" />
-            <select name="minSalary" defaultValue={params.minSalary || ''} aria-label="Minimum salary">
-              <option value="">Any salary</option>
-              <option value="15000">NPR 15,000+</option>
-              <option value="20000">NPR 20,000+</option>
-              <option value="25000">NPR 25,000+</option>
-              <option value="30000">NPR 30,000+</option>
-              <option value="40000">NPR 40,000+</option>
+            <select name="minSalary" defaultValue={params.minSalary || ''} aria-label="Expected salary">
+              <option value="">Expected salary</option>
+              <option value="15000">At least NPR 15,000</option>
+              <option value="20000">At least NPR 20,000</option>
+              <option value="25000">At least NPR 25,000</option>
+              <option value="30000">At least NPR 30,000</option>
+              <option value="40000">At least NPR 40,000</option>
             </select>
-            <button className="button searchButton" type="submit">Search jobs</button>
+            <input name="skill" defaultValue={params.skill || ''} placeholder="Skill (optional), e.g. Excel" aria-label="Required skill" />
+            <button className="button searchButton" type="submit">Find jobs</button>
           </form>
 
           <div className="quickCategories" aria-label="Popular job categories">
@@ -94,7 +96,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
           <div>
             <span className="eyebrow">{isFiltering ? 'Search results' : 'Latest vacancies'}</span>
             <h2>{isFiltering ? `${jobs.length} matching job${jobs.length === 1 ? '' : 's'}` : 'Jobs you can apply for now'}</h2>
-            <p className="muted">Search normally, filter by category, skill or salary, or create a profile for compatibility-ranked recommendations.</p>
+            <p className="muted">Search by role, category, expected salary or skill — or create a profile for compatibility-ranked recommendations.</p>
           </div>
           <div className="heroActions">
             {isFiltering && <Link className="button secondary" href="/#vacancies">Clear filters</Link>}
