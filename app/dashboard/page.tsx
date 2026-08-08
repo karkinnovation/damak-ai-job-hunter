@@ -1,8 +1,21 @@
 import Link from 'next/link'
 import { requireUser } from '@/lib/auth'
 import { ApplicationStatus } from '@/components/ApplicationStatus'
+import { calculateMatch } from '@/lib/matching'
 
 export const dynamic = 'force-dynamic'
+
+function money(value: number) {
+  return new Intl.NumberFormat('en-NP').format(value)
+}
+
+function employmentLabel(value: string) {
+  return String(value || '')
+    .split('_')
+    .filter(Boolean)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
 
 export default async function Dashboard() {
   const { supabase, user } = await requireUser()
@@ -13,13 +26,68 @@ export default async function Dashboard() {
   }
 
   if (profile.role === 'job_seeker') {
-    const [{ data: seeker, error: seekerError }, { count: applications }, { data: latestApplication }] = await Promise.all([
-      supabase.from('job_seeker_profiles').select('user_id').eq('user_id', user.id).maybeSingle(),
+    const [
+      { data: seeker, error: seekerError },
+      { count: applications },
+      { data: latestApplication },
+      { data: openJobs },
+    ] = await Promise.all([
+      supabase
+        .from('job_seeker_profiles')
+        .select('user_id,skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,preferred_categories')
+        .eq('user_id', user.id)
+        .maybeSingle(),
       supabase.from('applications').select('*', { count: 'exact', head: true }).eq('job_seeker_id', user.id),
       supabase.from('applications').select('id,status,created_at,jobs(title)').eq('job_seeker_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+      supabase
+        .from('jobs')
+        .select('id,title,category,ward,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude,businesses(business_name)')
+        .eq('status', 'open')
+        .limit(50),
     ])
 
     const profileComplete = !seekerError && !!seeker
+
+    const bestMatches = seeker
+      ? (openJobs || [])
+          .map((job: any) => {
+            const breakdown = calculateMatch({
+              seeker: {
+                skills: seeker.skills || [],
+                experience_months: seeker.experience_months,
+                education_level: seeker.education_level,
+                expected_salary_min: seeker.expected_salary_min,
+                expected_salary_max: seeker.expected_salary_max,
+                employment_type: seeker.employment_type,
+                available_from: String(seeker.available_from).slice(0, 5),
+                available_until: String(seeker.available_until).slice(0, 5),
+                max_travel_km: Number(seeker.max_travel_km),
+                latitude: seeker.latitude,
+                longitude: seeker.longitude,
+                ward: seeker.ward,
+                preferred_categories: seeker.preferred_categories || [],
+              },
+              job: {
+                required_skills: job.required_skills || [],
+                preferred_skills: job.preferred_skills || [],
+                experience_required_months: job.experience_required_months,
+                education_requirement: job.education_requirement,
+                salary_min: job.salary_min,
+                salary_max: job.salary_max,
+                employment_type: job.employment_type,
+                working_start: String(job.working_start).slice(0, 5),
+                working_end: String(job.working_end).slice(0, 5),
+                latitude: job.latitude,
+                longitude: job.longitude,
+                ward: job.ward,
+                category: job.category,
+              },
+            })
+            return { job, breakdown }
+          })
+          .sort((a, b) => b.breakdown.score - a.breakdown.score)
+          .slice(0, 2)
+      : []
 
     return (
       <section className="container">
@@ -27,9 +95,9 @@ export default async function Dashboard() {
           <div>
             <span className="eyebrow">Job seeker dashboard</span>
             <h1>Hi, {profile.full_name}</h1>
-            <p className="muted">Search local vacancies, track your applications, or let Awasar rank your best-fit jobs.</p>
+            <p className="muted">Your applications and best-fit local jobs, all in one place.</p>
           </div>
-          <Link className="button" href="/seeker/hunt">✦ Find My Best Matches</Link>
+          <Link className="button secondary" href="/jobs">Browse jobs</Link>
         </div>
 
         <div className="grid">
@@ -61,6 +129,60 @@ export default async function Dashboard() {
             )}
           </div>
         </div>
+
+        {profileComplete ? (
+          <section className="dashboardMatches" aria-labelledby="best-matches-heading">
+            <div className="sectionHeader dashboardMatchHeader">
+              <div>
+                <span className="eyebrow">Best matches for you</span>
+                <h2 id="best-matches-heading">Your top 2 jobs</h2>
+                <p className="muted">Calculated instantly from your skills, salary, experience, availability and location.</p>
+              </div>
+              <Link className="button secondary" href="/seeker/hunt">View all matches</Link>
+            </div>
+
+            <div className="bestMatchGrid">
+              {bestMatches.length ? bestMatches.map(({ job, breakdown }, index) => (
+                <article className="card dashboardMatchCard" key={job.id}>
+                  <div className="dashboardMatchTop">
+                    <span className="matchRank">#{index + 1} Best match</span>
+                    <span className={`matchScoreBadge matchScore${Math.min(4, Math.floor(breakdown.score / 20))}`}>{breakdown.score}% Match</span>
+                  </div>
+
+                  <span className="eyebrow">{job.category} · Damak-{job.ward}</span>
+                  <h3><Link href={`/jobs/${job.id}`}>{job.title}</Link></h3>
+                  <p className="companyName">{job.businesses?.business_name || 'Local employer'}</p>
+
+                  <div className="vacancyFacts">
+                    <span><b>NPR {money(job.salary_min)}–{money(job.salary_max)}</b></span>
+                    <span>{employmentLabel(job.employment_type)}</span>
+                  </div>
+
+                  <div className="dashboardReasons">
+                    {breakdown.positives.slice(0, 2).map((reason, i) => <p className="positive" key={i}>✓ {reason}</p>)}
+                    {breakdown.mismatches.slice(0, 1).map((reason, i) => <p className="warning" key={i}>⚠ {reason}</p>)}
+                  </div>
+
+                  <Link className="button secondary full" href={`/jobs/${job.id}`}>View job</Link>
+                </article>
+              )) : (
+                <div className="card empty bestMatchEmpty">
+                  <h3>No open vacancies yet</h3>
+                  <p className="muted">Your best matches will appear here as soon as employers post jobs.</p>
+                </div>
+              )}
+            </div>
+          </section>
+        ) : (
+          <div className="finderCallout dashboardProfileCta">
+            <div>
+              <span className="eyebrow">Personalized matching</span>
+              <h2>Build your job profile and find the best match.</h2>
+              <p>Add your skills, expected salary, availability and preferences once.</p>
+            </div>
+            <Link className="button" href="/seeker/profile">Create profile now</Link>
+          </div>
+        )}
       </section>
     )
   }
