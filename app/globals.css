@@ -24,7 +24,7 @@ form.stack{display:grid;gap:16px}.field{display:grid;gap:7px}.field label{font-s
 
 .authPage{min-height:calc(100vh - 130px);display:grid;align-items:center;padding:46px 16px;background:radial-gradient(circle at 18% 18%,#DDE0F7 0,transparent 31%),linear-gradient(180deg,#fff,var(--bg))}.authWrap{width:min(980px,100%);margin:auto;display:grid;grid-template-columns:1fr 430px;gap:70px;align-items:center}.authIntro p{font-size:17px;line-height:1.65;color:var(--muted);max-width:480px}.authPoints{display:grid;gap:10px;margin-top:24px;color:#344054;font-weight:650}.authCard{padding:28px}.authCard h1{font-size:34px}.authSwitch{margin:18px 0 0;text-align:center}
 
-.sectionHeader{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:22px}.sectionHeader p{margin-bottom:0}.list{display:grid;gap:14px}.jobRow{display:flex;justify-content:space-between;gap:18px;align-items:center}.jobRow .meta{display:flex;gap:8px 12px;flex-wrap:wrap;color:var(--muted);font-size:13px}.applicationReason{max-width:760px;line-height:1.55}.pill{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;background:#f2f4f7;color:#344054;font-size:12px;font-weight:750}.stat{font-size:31px;font-weight:900}.kpi{display:grid;gap:5px}.empty{text-align:center;padding:48px 22px}.tableWrap{overflow:auto;border-radius:var(--radius)}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:12px;border-bottom:1px solid var(--line);vertical-align:top}.table th{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.06em}.featureGrid{width:min(1120px,calc(100% - 32px));margin:36px auto 70px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.featureGrid .card p{color:var(--muted);line-height:1.6;margin-bottom:0}footer{padding:28px 16px;text-align:center;color:var(--muted);font-size:12px;border-top:1px solid var(--line);background:#fff}
+.sectionHeader{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:22px}.sectionHeader p{margin-bottom:0}.list{display:grid;gap:14px}.jobRow{display:flex;justify-content:space-between;gap:18px;align-items:center}.jobRow .meta{display:flex;gap:8px 12px;flex-wrap:wrap;color:var(--muted);font-size:13px}.applicationReason{max-width:760px;line-height:1.55}.pill{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;background:#f2f4f7;color:#344054;font-size:12px;font-weight:750}.stat{font-size:31px;font-weight:900}.kpi{display:grid;gap:5px}.empty{text-align:center;padding:48px 22px}.tableWrap{overflow:auto;border-radius:var(--radius)}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:12px;border-bottom:1px solid var(--line);vertical-align:top}.table th{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.06em}.featureGrid{width:min(1120px,calc(100% - 32px));margin:36px auto 70px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.featureGrid .card p{color:var(--muted);line-height:1.6;margin-bottom:0}
 
 @media(max-width:900px){.nav{align-items:flex-start}.navLinks{gap:12px;flex-wrap:wrap}.navName{display:none}.authWrap{grid-template-columns:1fr;gap:30px;max-width:620px}.authIntro{display:none}}
 @media(max-width:800px){.heroGrid{grid-template-columns:1fr}.hero{padding:54px 0}.demoCard{transform:none}.grid,.grid2,.featureGrid{grid-template-columns:1fr}.formGrid,.reasonGrid{grid-template-columns:1fr}.container,.narrow{padding-top:28px}.jobRow{align-items:flex-start;flex-direction:column}.sectionHeader{align-items:flex-start;flex-direction:column}.checks{grid-template-columns:1fr}h1{font-size:34px}.matchCard{padding:19px}.cardTop{gap:12px}.score{flex-basis:70px;width:70px;height:70px;font-size:20px}}
@@ -314,3 +314,141 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
 }
+
+/* ============================================================
+   Structural redesign: components, depth, rhythm
+   ============================================================ */
+
+/* Elevation scale — depth now means something instead of every
+   surface carrying the same shadow. */
+:root{--e1:0 1px 2px rgba(22,26,51,.05);--e2:0 4px 14px rgba(22,26,51,.07);--e3:0 14px 34px rgba(22,26,51,.10);--e4:0 30px 70px rgba(22,26,51,.16)}
+
+/* Icons sit on the text baseline properly instead of floating */
+svg{flex:none}
+.meta svg,.payType svg,.locationPill svg,.smartMatchText svg{vertical-align:-2px;opacity:.75}
+.button svg{margin-left:2px}
+
+/* --- Company monogram --------------------------------------------------- */
+.companyMark{display:grid;place-items:center;border-radius:12px;font-weight:800;font-family:var(--font-display),sans-serif;letter-spacing:-.02em;flex:none;user-select:none}
+
+/* --- Badge (was referenced on the job page but never defined) ----------- */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;background:var(--surface-soft);color:#3D4363;border:1px solid var(--line);font-size:12px;font-weight:700;line-height:1.3}
+
+/* --- Cards: flatter at rest, lift on interaction ------------------------ */
+.card{box-shadow:var(--e2)}
+.card:hover,.jobRow:hover{box-shadow:var(--e3)}
+
+/* --- Homepage vacancy card: real hierarchy ------------------------------ */
+.vacancyCard{padding:20px;gap:0}
+.vacancyHead{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
+.vacancyHeadText{min-width:0}
+.vacancyCard h3{font-size:18px;line-height:1.3;margin:0 0 3px}
+.vacancyCard h3 a{display:block;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.vacancyCard .companyName{margin:0;font-size:13px}
+.vacancyTags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.locationPill{display:inline-flex;align-items:center;gap:4px}
+.vacancyDescription{margin:0 0 12px;min-height:38px}
+.skillPreview{margin:0 0 14px}
+.pillMore{background:transparent;border:1px dashed var(--line);color:var(--muted)}
+
+/* salary gets its own footer band — it's the thing people scan for */
+.vacancyFooter{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:auto;padding-top:14px;border-top:1px solid var(--line)}
+.vacancyPay{display:grid;gap:2px;min-width:0}
+.payLabel{font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;color:var(--muted)}
+.vacancyPay strong{font-family:var(--font-display),sans-serif;font-size:15px;letter-spacing:-.02em;color:var(--text)}
+.payType{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)}
+.vacancyCta{flex:none;display:inline-flex;align-items:center;gap:4px}
+
+/* --- Jobs list row ------------------------------------------------------ */
+.jobRow{gap:20px}
+.jobRowMain{display:flex;gap:14px;align-items:flex-start;min-width:0}
+.jobRowText{min-width:0}
+.jobRowText h3{margin:8px 0 6px;font-size:19px}
+.jobRowText h3 a:hover{color:var(--primary)}
+.jobRow .meta span{display:inline-flex;align-items:center;gap:5px}
+.jobRow .skillPreview{margin:10px 0 0}
+
+/* --- Match card --------------------------------------------------------- */
+.matchCardHead{display:flex;gap:13px;align-items:flex-start;min-width:0}
+.reasonGrid p{display:flex;gap:7px;align-items:flex-start}
+.reasonGrid p svg{margin-top:2px}
+
+/* --- Pills: quieter, more precise -------------------------------------- */
+.pill{background:var(--surface-soft);color:#3D4363;border:1px solid transparent}
+.categoryPill{background:var(--primary-soft);color:var(--primary)}
+.locationPill{background:var(--surface-soft);color:#4A5070}
+
+/* --- Section rhythm ----------------------------------------------------- */
+.sectionHeader{margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.homeSectionHeader{border-bottom:0;padding-bottom:0}
+
+/* --- Search bar: taller, clearer, icon aligned ------------------------- */
+.searchIcon{display:grid;place-items:center;top:50%;transform:translateY(-50%);font-size:0;color:#8A90AC}
+.searchMain input{padding-left:42px}
+
+/* --- Footer: a real base for the page ---------------------------------- */
+.siteFooter{margin-top:70px;padding:0;background:#fff;border-top:1px solid var(--line);color:var(--text);text-align:left}
+.footerInner{width:min(1120px,calc(100% - 32px));margin:0 auto;padding:46px 0 34px;display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:44px}
+.footerWordmark{margin:0 0 4px;font-family:var(--font-display),sans-serif;font-size:20px;font-weight:700;letter-spacing:-.03em}
+.footerWordmark span{color:var(--gold2);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-left:5px}
+.footerTagline{margin:0 0 12px;color:var(--gold2);font-size:13px;font-weight:600}
+.footerBlurb{margin:0;color:var(--muted);font-size:13px;line-height:1.65;max-width:330px}
+.footerCol{display:grid;gap:9px;align-content:start}
+.footerCol h2{margin:0 0 3px;font-size:11px;text-transform:uppercase;letter-spacing:.1em;font-weight:800;color:var(--text)}
+.footerCol a{color:var(--muted);font-size:13.5px;width:max-content;transition:color .15s ease}
+.footerCol a:hover{color:var(--primary)}
+.footerBase{border-top:1px solid var(--line)}
+.footerBase{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;width:min(1120px,calc(100% - 32px));margin:0 auto;padding:16px 0 22px;font-size:12px;color:var(--muted)}
+
+@media(max-width:860px){
+  .footerInner{grid-template-columns:1fr 1fr;gap:30px}
+  .footerBrand{grid-column:1/-1}
+  .footerBlurb{max-width:none}
+}
+@media(max-width:680px){
+  .siteFooter{margin-top:44px}
+  .footerInner{grid-template-columns:1fr;gap:26px;padding:32px 0 24px}
+  .footerBase{flex-direction:column;gap:6px;padding-bottom:26px}
+  .vacancyFooter{flex-direction:column;align-items:stretch;gap:12px}
+  .vacancyCta{width:100%;justify-content:center}
+  .jobRowMain{gap:11px}
+  .jobRow .button{width:100%;justify-content:center}
+  .sectionHeader{padding-bottom:14px}
+}
+
+/* ---- Fixes found while testing the redesign at 390px ------------------- */
+
+/* 1. The score ring's number lives in .scoreInner now, so the old mobile
+      rules that shrank `.score`'s font-size no longer reached it — the 22px
+      text stayed put inside a 62px ring and clipped the "STRONG" label. */
+.score .scoreInner{font-size:22px}
+.score small{font-size:9px;line-height:1}
+@media(max-width:800px){
+  .score{flex:0 0 70px}
+  .score .scoreInner{font-size:19px}
+  .score small{font-size:8px}
+}
+@media(max-width:680px){
+  .score{flex:0 0 62px;padding:5px}
+  .score .scoreInner{font-size:17px}
+  .score small{font-size:7.5px;letter-spacing:.04em}
+}
+
+/* 2. Flex children default to min-width:auto, so the job title block refused
+      to shrink and ran underneath the score ring on narrow screens. */
+.matchCardHead>div,.vacancyHeadText,.jobRowText,.cardTop>div{min-width:0}
+.matchCardHead .eyebrow,.cardTop .eyebrow{flex-wrap:wrap}
+.matchCard h3,.jobRowText h3{overflow-wrap:anywhere}
+
+/* 3. Ring sweeps up to its value on load rather than appearing filled.
+      @property makes the angle animatable; browsers without it just show
+      the final value, which is the correct fallback. */
+@property --pct{syntax:'<number>';initial-value:0;inherits:false}
+.score{animation:popIn .5s .1s var(--ease-out) both,ringFill .9s .15s var(--ease-out) both}
+@keyframes ringFill{from{--pct:0}}
+
+/* Eyebrow marker: inline-block rather than a flex item, so when the label
+   wraps onto two lines the diamond stays tucked against the first word
+   instead of being pushed onto a line of its own. */
+.eyebrow{display:block}
+.eyebrow::before{display:inline-block;margin-right:7px;vertical-align:1px}

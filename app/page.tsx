@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { JOB_CATEGORIES } from '@/lib/constants'
 import RefreshFilterReset from '@/components/RefreshFilterReset'
 import SearchSubmitButton from '@/components/SearchSubmitButton'
+import { CompanyMark } from '@/components/CompanyMark'
+import { IconSearch, IconMapPin, IconBriefcase, IconArrowRight } from '@/components/Icon'
 
 type SearchParams = Promise<{ q?: string; category?: string; skill?: string; salaryRange?: string }>
 
@@ -72,11 +74,14 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
           <div className="heroCopy">
             <span className="eyebrow">अवसर · Job search made easier</span>
             <h1>Find your dream job.</h1>
+            <p className="heroOneLiner">
+              Real vacancies from employers across Damak and Jhapa — with a match score that tells you where you actually stand.
+            </p>
           </div>
 
           <form className="jobSearch jobSearchHome" action="/" method="get">
             <div className="searchMain">
-              <span className="searchIcon" aria-hidden="true">⌕</span>
+              <span className="searchIcon"><IconSearch size={19} /></span>
               <input name="q" defaultValue={params.q || ''} placeholder="Job title, skill or company" aria-label="Search jobs" />
             </div>
             <select name="category" defaultValue={category} aria-label="Job category">
@@ -121,19 +126,38 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
         <div className="vacancyGrid">
           {jobs.length ? jobs.map((job: any) => (
             <article className="card vacancyCard" key={job.id}>
-              <div className="vacancyTop">
+              <div className="vacancyHead">
+                <CompanyMark name={job.businesses?.business_name} />
+                <div className="vacancyHeadText">
+                  <h3><Link href={`/jobs/${job.id}`}>{job.title}</Link></h3>
+                  <p className="companyName">{job.businesses?.business_name || 'Local employer'}</p>
+                </div>
+              </div>
+
+              <div className="vacancyTags">
                 <span className="categoryPill">{job.category}</span>
-                <span className="locationPill">Damak-{job.ward}</span>
+                <span className="locationPill"><IconMapPin size={12} /> Damak-{job.ward}</span>
               </div>
-              <h3><Link href={`/jobs/${job.id}`}>{job.title}</Link></h3>
-              <p className="companyName">{job.businesses?.business_name || 'Local employer'}</p>
-              <div className="vacancyFacts">
-                <span><b>NPR {money(job.salary_min)}–{money(job.salary_max)}</b></span>
-                <span>{employmentLabel(job.employment_type)}</span>
-              </div>
-              {job.required_skills?.length > 0 && <div className="skillPreview">{job.required_skills.slice(0, 3).map((s: string) => <span className="pill" key={s}>{s}</span>)}</div>}
+
               <p className="vacancyDescription">{job.description}</p>
-              <Link className="button secondary full" href={`/jobs/${job.id}`}>View vacancy</Link>
+
+              {job.required_skills?.length > 0 && (
+                <div className="skillPreview">
+                  {job.required_skills.slice(0, 3).map((s: string) => <span className="pill" key={s}>{s}</span>)}
+                  {job.required_skills.length > 3 && <span className="pill pillMore">+{job.required_skills.length - 3}</span>}
+                </div>
+              )}
+
+              <div className="vacancyFooter">
+                <div className="vacancyPay">
+                  <span className="payLabel">Monthly salary</span>
+                  <strong>NPR {money(job.salary_min)}–{money(job.salary_max)}</strong>
+                  <span className="payType"><IconBriefcase size={12} /> {employmentLabel(job.employment_type)}</span>
+                </div>
+                <Link className="button secondary vacancyCta" href={`/jobs/${job.id}`}>
+                  View <IconArrowRight size={15} />
+                </Link>
+              </div>
             </article>
           )) : (
             <div className="card empty vacancyEmpty">

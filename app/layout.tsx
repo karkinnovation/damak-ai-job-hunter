@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter, Space_Grotesk } from 'next/font/google'
 import './globals.css'
 import { Nav } from '@/components/Nav'
+import { Footer } from '@/components/Footer'
 
 // Two roles, deliberately different in character: Space Grotesk carries the
 // headlines (confident, geometric, a little technical — reads as "matching
@@ -21,7 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <Nav />
         <main className="pageFade">{children}</main>
-        <footer><b>अवसर · Awasar</b> — सही काम, सही अवसर. AI assists matching; employers make the final hiring decision.</footer>
+        <Footer />
       </body>
     </html>
   )
