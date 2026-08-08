@@ -452,3 +452,105 @@ svg{flex:none}
    instead of being pushed onto a line of its own. */
 .eyebrow{display:block}
 .eyebrow::before{display:inline-block;margin-right:7px;vertical-align:1px}
+
+/* ============================================================
+   Journey map: search, animated trail, distance readout
+   ============================================================ */
+.journeyMap{display:grid;gap:10px}
+.journeyCanvas{height:340px}
+
+.journeySearch{position:relative;z-index:5}
+.journeySearchBar{display:flex;gap:7px}
+.journeySearchBar input{flex:1;min-width:0;height:42px;padding:0 12px;border:1px solid #d0d5dd;border-radius:10px;background:#fff;outline:none;transition:border-color .15s,box-shadow .15s}
+.journeySearchBar input:focus{border-color:#9AA3E8;box-shadow:0 0 0 3px #E6E8FA}
+.journeySearchBar .button{flex:none}
+
+.journeyResults{position:absolute;top:48px;left:0;right:0;z-index:1000;list-style:none;margin:0;padding:6px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--e3);display:grid;gap:2px;max-height:260px;overflow:auto;animation:fadeInUp .2s var(--ease) both}
+.journeyResults button{display:grid;gap:2px;width:100%;text-align:left;padding:9px 10px;border:0;border-radius:8px;background:transparent;cursor:pointer;transition:background .12s ease}
+.journeyResults button:hover{background:var(--surface-soft)}
+.journeyResults strong{font-size:14px}
+.journeyResults span{font-size:12px;color:var(--muted)}
+.journeySearchStatus{margin:2px 0 0;font-size:12.5px}
+
+/* the dot travelling along the trail */
+.awasarTravellerWrap{background:transparent!important;border:0!important}
+.awasarTraveller{position:relative;width:22px;height:22px;display:grid;place-items:center}
+.awasarTraveller i{width:12px;height:12px;border-radius:50%;background:var(--gold);border:2.5px solid #fff;box-shadow:0 2px 8px rgba(22,26,51,.4)}
+.awasarTraveller::before{content:'';position:absolute;inset:0;border-radius:50%;background:var(--gold);opacity:.35;animation:travellerPulse 1.4s ease-out infinite}
+@keyframes travellerPulse{0%{transform:scale(.5);opacity:.5}100%{transform:scale(1.6);opacity:0}}
+
+.awasarMapMarker.search{background:var(--gold2)}
+
+.journeyReadout{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.journeyProgress{display:flex;align-items:center;gap:10px;flex:1;min-width:200px;font-size:13px}
+.journeyProgress strong{font-family:var(--font-display),sans-serif;font-size:16px;color:var(--primary);letter-spacing:-.02em}
+.journeyBar{flex:1;min-width:70px;height:6px;border-radius:999px;background:#E7E9F4;overflow:hidden}
+.journeyBar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--primary),var(--gold))}
+
+/* ============================================================
+   Insights page: sample banner, stats, charts
+   ============================================================ */
+.insightsPage{display:grid;gap:20px}
+
+.sampleBanner{margin:0;padding:12px 15px;border-radius:11px;background:var(--gold-soft);border:1px solid #EFD3A2;color:#7A4E08;font-size:13.5px;line-height:1.55}
+
+.statGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.statCard{display:grid;gap:3px;align-content:start;padding:18px}
+.statIcon{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--primary-soft);color:var(--primary);margin-bottom:7px}
+.statValue{font-family:var(--font-display),sans-serif;font-size:34px;font-weight:700;letter-spacing:-.04em;line-height:1;color:var(--text)}
+.statValue small{font-size:14px;font-weight:600;color:var(--muted);margin-left:4px;letter-spacing:0}
+.statLabel{font-size:13px;font-weight:700;color:var(--text)}
+.statCard p{margin:3px 0 0;font-size:12.5px;line-height:1.5}
+
+.insightBlock{padding:26px}
+.insightHead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:10px}
+.insightHead h2{margin:0}
+.insightLede{margin:0 0 20px;font-size:15px;line-height:1.7;color:#3D4363;max-width:78ch}
+.insightLede strong{color:var(--text)}
+
+/* --- chart --- */
+.chartFigure{margin:0}
+.openingsChart{width:100%;height:auto;display:block;overflow:visible}
+.chartGrid{stroke:var(--line);stroke-width:1}
+.chartAxisLabel{fill:var(--muted);font-size:11px;font-weight:600}
+.chartAxisLabelPeak{fill:var(--gold2);font-weight:800}
+.chartPeakLabel{fill:var(--gold2);font-size:13px;font-weight:800;font-family:var(--font-display),sans-serif}
+.chartBar{fill:#C9CEEA;transform-box:fill-box;transform-origin:bottom;animation:barGrow .7s var(--ease-out) both;transition:fill .15s ease}
+.chartBarPeak{fill:var(--gold)}
+.chartBarGroup:hover .chartBar{fill:var(--primary)}
+.chartBarGroup:hover .chartBarPeak{fill:var(--gold2)}
+@keyframes barGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.chartFigure figcaption{margin-top:10px;font-size:12.5px}
+
+.insightTakeaways{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
+.takeawayLabel{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;font-weight:800;color:var(--muted);margin-bottom:4px}
+.insightTakeaways strong{display:block;font-family:var(--font-display),sans-serif;font-size:17px;letter-spacing:-.02em;margin-bottom:3px}
+.insightTakeaways p{margin:0;font-size:12.5px;line-height:1.5}
+
+/* --- competition list --- */
+.competitionList{list-style:none;margin:0;padding:0;display:grid;gap:16px}
+.competitionTop{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:6px}
+.competitionTop strong{font-size:14.5px}
+.competitionRatio{font-family:var(--font-display),sans-serif;font-size:13px;font-weight:700;color:var(--primary);white-space:nowrap}
+.competitionBar{height:9px;border-radius:999px;background:#EEF0F8;overflow:hidden}
+.competitionBar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--primary),#5A63C4);transform-origin:left;animation:barSlide .8s var(--ease-out) both}
+@keyframes barSlide{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.competitionMeta{margin-top:5px;font-size:12px}
+
+@media(max-width:980px){
+  .statGrid{grid-template-columns:repeat(2,1fr)}
+  .insightTakeaways{grid-template-columns:1fr}
+}
+@media(max-width:680px){
+  .statGrid{grid-template-columns:1fr 1fr;gap:10px}
+  .statCard{padding:14px}
+  .statValue{font-size:27px}
+  .insightBlock{padding:18px}
+  .journeyCanvas{height:280px}
+  .journeySearchBar{flex-wrap:wrap}
+  .journeySearchBar input{flex:1 1 100%}
+  .journeySearchBar .button{flex:1}
+  .journeyReadout{align-items:stretch;flex-direction:column}
+  .journeyReadout .button{width:100%}
+  .insightHead{flex-direction:column;align-items:flex-start}
+}

@@ -53,6 +53,7 @@ export async function Nav() {
 
       <nav className="navLinks" aria-label="Main navigation">
         <Link href="/jobs">Find Jobs</Link>
+        <Link href="/insights">Insights</Link>
 
         {profile?.role === 'job_seeker' && (
           <>

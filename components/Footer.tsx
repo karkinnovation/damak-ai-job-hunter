@@ -23,6 +23,7 @@ export function Footer() {
         <nav className="footerCol" aria-label="Job seeker links">
           <h2>For job seekers</h2>
           <Link href="/jobs">Browse vacancies</Link>
+          <Link href="/insights">Market insights</Link>
           <Link href="/seeker/hunt">Matched for you</Link>
           <Link href="/seeker/applications">My applications</Link>
           <Link href="/seeker/profile">My profile</Link>

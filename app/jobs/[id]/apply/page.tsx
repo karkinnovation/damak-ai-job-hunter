@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { requireRole } from '@/lib/auth'
 import { calculateMatch, haversineKm } from '@/lib/matching'
 import { snapshotMismatchPatterns } from '@/lib/applicationInsights'
-import { DistanceMap } from '@/components/LeafletMap'
+import { JourneyMap } from '@/components/JourneyMap'
 import { ApplyGuard } from '@/components/ApplyGuard'
 
 const HOURLY_LIMIT = 2
@@ -168,8 +168,13 @@ export default async function ApplyPreview({ params, searchParams }: { params: P
 
           <div className="card mapPreviewCard">
             <h3>Home → workplace</h3>
-            <p className="muted">The line is a straight-line distance used consistently by Awasar’s matching score. It is not a road-route estimate.</p>
-            <DistanceMap home={{ latitude: homeLat!, longitude: homeLng! }} work={{ latitude: workLat!, longitude: workLng! }} />
+            <p className="muted">The trail traces the straight-line distance Awasar uses in its matching score — it is not a road-route estimate. The green ring shows your preferred travel radius.</p>
+            <JourneyMap
+              home={{ latitude: homeLat!, longitude: homeLng! }}
+              work={{ latitude: workLat!, longitude: workLng! }}
+              workLabel={business?.business_name || 'Workplace'}
+              maxTravelKm={seeker.max_travel_km != null ? Number(seeker.max_travel_km) : null}
+            />
           </div>
 
           <div className="applyConfirmActions applyGuardActions">
