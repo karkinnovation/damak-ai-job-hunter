@@ -11,7 +11,7 @@ export default async function Dashboard() {
       supabase.from('job_seeker_profiles').select('id').eq('user_id', user.id).maybeSingle(),
       supabase.from('applications').select('*', { count: 'exact', head: true }).eq('job_seeker_id', user.id),
     ])
-    return <section className="container"><div className="sectionHeader"><div><span className="eyebrow">Job seeker dashboard</span><h1>Hi, {profile.full_name}</h1><p className="muted">Find suitable local work instead of scrolling through everything.</p></div><Link className="button" href="/seeker/hunt">✨ Hunt Jobs For Me</Link></div>
+    return <section className="container"><div className="sectionHeader"><div><span className="eyebrow">Job seeker dashboard</span><h1>Hi, {profile.full_name}</h1><p className="muted">Search local vacancies or let Awasar rank the best-fit jobs for you.</p></div><Link className="button" href="/seeker/hunt">✦ Find My Best Matches</Link></div>
       <div className="grid"><div className="card kpi"><span className="muted">Profile</span><span className="stat">{seeker ? 'Ready' : 'Incomplete'}</span><Link href="/seeker/profile">Edit profile →</Link></div><div className="card kpi"><span className="muted">Applications</span><span className="stat">{applications || 0}</span><Link href="/seeker/applications">View applications →</Link></div><div className="card kpi"><span className="muted">Local vacancies</span><span className="stat">Damak</span><Link href="/jobs">Browse jobs →</Link></div></div>
     </section>
   }

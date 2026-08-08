@@ -12,13 +12,18 @@ export async function Nav() {
     profile = result.data
   }
 
+  const signedIn = Boolean(userId)
+
   return (
     <header className="nav">
-      <Link className="brand" href="/">Damak <span>Job Hunter</span></Link>
+      <Link className="brand" href="/" aria-label="Awasar home">
+        <span className="brandNepali">अवसर</span>
+        <span className="brandLatin">Awasar</span>
+      </Link>
       <nav className="navLinks" aria-label="Main navigation">
+        <Link href="/jobs">Find Jobs</Link>
         {profile?.role === 'job_seeker' && <>
-          <Link href="/jobs">Jobs</Link>
-          <Link href="/seeker/hunt">AI Hunt</Link>
+          <Link href="/seeker/hunt">AI Match</Link>
           <Link href="/seeker/applications">Applications</Link>
           <Link href="/dashboard">Dashboard</Link>
         </>}
@@ -32,10 +37,10 @@ export async function Nav() {
           <Link href="/admin">Admin</Link>
           <Link href="/dashboard">Dashboard</Link>
         </>}
-        {!profile && <Link href="/jobs">Jobs</Link>}
-        {profile ? (
+        {signedIn && !profile && <Link href="/dashboard">Dashboard</Link>}
+        {signedIn ? (
           <div className="navUser">
-            <span className="navName">{profile.full_name}</span>
+            {profile?.full_name && <span className="navName">{profile.full_name}</span>}
             <form action="/logout" method="post"><button className="button secondary small">Logout</button></form>
           </div>
         ) : <Link className="button small" href="/auth">Login / Register</Link>}

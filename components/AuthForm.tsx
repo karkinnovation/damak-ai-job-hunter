@@ -52,9 +52,9 @@ export function AuthForm({ defaultRole, initialError }: { defaultRole: 'job_seek
   }
 
   return <div className="card authCard">
-    <span className="eyebrow">Damak Job Hunter</span>
+    <span className="eyebrow">अवसर · Awasar</span>
     <h1>{mode === 'login' ? 'Welcome back' : 'Create your account'}</h1>
-    <p className="muted">{mode === 'login' ? 'Sign in to continue to your local job dashboard.' : 'Choose your role and start matching with local opportunities.'}</p>
+    <p className="muted">{mode === 'login' ? 'Sign in to continue finding better-fit local jobs.' : 'Create one profile and start finding local opportunities that fit.'}</p>
     {error && <p className="error">{error}</p>}
     {success && <p className="success">{success}</p>}
     <form className="stack" onSubmit={submit}>

@@ -1,6 +1,6 @@
-# Damak AI Job Hunter
+# अवसर (Awasar) — Local AI Job Matching
 
-Hackathon-ready MVP for two-sided local job matching in Damak, Jhapa, Nepal.
+Hackathon-ready MVP for local job discovery plus two-sided AI compatibility matching in Jhapa, Nepal. The product brand is **अवसर (Awasar)** — “opportunity”.
 
 ## What works
 
@@ -12,7 +12,7 @@ Hackathon-ready MVP for two-sided local job matching in Damak, Jhapa, Nepal.
 - Public vacancy browsing and job details
 - Deterministic 0–100 compatibility scoring
 - AI-generated explanation using Google Gemini API, with deterministic fallback when no API key is configured
-- Job seeker “Hunt Jobs For Me” ranking
+- Job seeker compatibility ranking / “Find My Best Matches”
 - Apply flow and “My Applications”
 - Employer applicant ranking with reasons
 - Manual reviewed / shortlist / reject actions; AI never auto-rejects

@@ -3,8 +3,8 @@ import './globals.css'
 import { Nav } from '@/components/Nav'
 
 export const metadata: Metadata = {
-  title: 'Damak Job Hunter',
-  description: 'AI-powered local job matching for Damak, Jhapa, Nepal.',
+  title: 'अवसर · Awasar',
+  description: 'Local job search and AI-powered compatibility matching for Jhapa, Nepal.',
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -13,7 +13,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <Nav />
         <main>{children}</main>
-        <footer>Built for local job matching in Damak, Jhapa · AI assists decisions; employers make final hiring choices.</footer>
+        <footer><b>अवसर · Awasar</b> — सही काम, सही अवसर. AI assists matching; employers make the final hiring decision.</footer>
       </body>
     </html>
   )
