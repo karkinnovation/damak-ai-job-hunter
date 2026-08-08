@@ -12,8 +12,8 @@ function formatDate(value: string) {
 export default async function Applications() {
   const { supabase, user } = await requireRole(['job_seeker'])
   const [{ data: apps }, { data: seeker }] = await Promise.all([
-    supabase.from('applications').select('id,status,created_at,job_id,distance_km,jobs(*)').eq('job_seeker_id', user.id).order('created_at', { ascending: false }),
-    supabase.from('job_seeker_profiles').select('*').eq('user_id', user.id).maybeSingle(),
+    supabase.from('applications').select('id,status,created_at,job_id,distance_km,jobs(id,title,ward,category,required_skills,preferred_skills,experience_required_months,education_requirement,salary_min,salary_max,employment_type,working_start,working_end,latitude,longitude)').eq('job_seeker_id', user.id).order('created_at', { ascending: false }),
+    supabase.from('job_seeker_profiles').select('skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,preferred_categories').eq('user_id', user.id).maybeSingle(),
   ])
 
   const jobIds = (apps || []).map((a: any) => a.job_id)

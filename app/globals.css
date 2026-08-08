@@ -155,3 +155,94 @@ form.stack{display:grid;gap:16px}.field{display:grid;gap:7px}.field label{font-s
   .applicationLimitCard { min-width: 100%; }
   .applyGuardActions { display: grid; width: 100%; }
 }
+
+/* v10 — site-wide usability + rendering performance */
+:root{
+  --focus:0 0 0 4px rgba(49,87,213,.12);
+}
+body{line-height:1.5}
+::selection{background:#dfe7ff;color:#172554}
+a,button,input,select,textarea{-webkit-tap-highlight-color:transparent}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;box-shadow:var(--focus)}
+
+/* Keep long result pages cheap to paint until cards approach the viewport. */
+.matchCard,.vacancyCard,.applicationCard,.anonymousCandidateCard,.jobRow{
+  content-visibility:auto;
+  contain-intrinsic-size:240px;
+}
+.card{transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease}
+.vacancyCard:hover,.matchCard:hover,.jobRow:hover,.applicationCard:hover,.anonymousCandidateCard:hover{
+  border-color:#cfd7ef;
+  box-shadow:0 14px 38px rgba(16,24,40,.075);
+}
+
+/* Navigation stays clean even with role-specific links. */
+.nav{box-shadow:0 1px 0 rgba(16,24,40,.02)}
+.navLinks>a:not(.button){padding:8px 2px;border-radius:8px;white-space:nowrap}
+.navUser{border-left:1px solid var(--line);padding-left:14px;margin-left:2px}
+
+/* Friendlier page rhythm. */
+.sectionHeader>div:first-child{max-width:760px}
+.sectionHeader h1,.sectionHeader h2{margin-bottom:7px}
+.list,.matchList{display:grid;gap:14px}
+.card p:last-child{margin-bottom:0}
+
+/* Faster-feeling, clearer forms. */
+.field input,.field select,.field textarea{min-height:46px;background:#fff}
+.field input::placeholder,.field textarea::placeholder{color:#98a2b3}
+.field label{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.check{min-height:42px;transition:border-color .15s ease,background .15s ease}
+.check:has(input:checked){border-color:#9db0f5;background:#f7f8ff}
+.notice,.error,.success{line-height:1.55}
+
+/* AI match page: compact summary first, then ranked cards. */
+.huntHeader .muted{max-width:720px}
+.matchSummary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.compactStat{padding:16px 18px;display:grid;gap:3px;box-shadow:none}
+.compactStat strong{font-size:27px;line-height:1.05;letter-spacing:-.035em}
+.matchList .matchCard:first-child{border-color:#b7c4f5;box-shadow:0 14px 40px rgba(49,87,213,.08)}
+
+/* Match explanations are readable without making every card feel heavy. */
+.aiExplanation{margin-top:14px;background:#fafbff}
+.aiBadge{color:#3443a8}
+.reasonGrid{background:#fafafa;border-radius:12px;padding:11px 13px;margin-top:13px}
+.reasonGrid p{margin:5px 0}
+.matchCard .cardTop h3{font-size:22px}
+.matchCard .cardTop .muted{margin:5px 0 0}
+
+/* Application / talent surfaces */
+.applicationCardTop,.anonymousCandidateTop{gap:16px}
+.applicationCard .meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+.privacyNote{background:#fafafa;padding:10px 11px;border:0;border-radius:10px}
+.talentFilters{box-shadow:none}
+
+/* Long vacancy descriptions remain scannable on listing pages. */
+.vacancyDescription{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+
+/* Mobile: preserve useful actions instead of squeezing the header. */
+@media(max-width:900px){
+  .nav{gap:12px}
+  .navLinks{gap:9px}
+  .navUser{border-left:0;padding-left:0}
+  .matchSummary{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:680px){
+  .nav{padding:7px 12px}
+  .brand{width:142px!important;height:44px!important}
+  .brand img{width:142px!important;height:44px!important}
+  .navLinks{margin-left:auto}
+  .navUser .navName{display:none}
+  .container,.narrow{width:min(100% - 24px,1120px)}
+  .card{padding:17px;border-radius:14px}
+  .matchSummary{grid-template-columns:1fr 1fr 1fr;gap:7px}
+  .compactStat{padding:12px 10px;text-align:center}
+  .compactStat .muted{font-size:11px}
+  .compactStat strong{font-size:21px}
+  .score{flex-basis:62px;width:62px;height:62px;border-width:5px;font-size:18px}
+  .reasonGrid{padding:9px 10px}
+  .button{min-height:46px}
+  .jobSearch input,.jobSearch select{min-height:48px}
+}
+@media(prefers-reduced-motion:reduce){
+  *{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}

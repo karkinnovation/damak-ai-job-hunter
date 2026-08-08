@@ -62,8 +62,8 @@ async function confirmApply(formData: FormData) {
   const jobId = String(formData.get('job_id') || '')
 
   const [{ data: seeker }, { data: job }] = await Promise.all([
-    supabase.from('job_seeker_profiles').select('*').eq('user_id', user.id).maybeSingle(),
-    supabase.from('jobs').select('*,businesses(latitude,longitude)').eq('id', jobId).maybeSingle(),
+    supabase.from('job_seeker_profiles').select('user_id,skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,preferred_categories').eq('user_id', user.id).maybeSingle(),
+    supabase.from('jobs').select('id,title,status,category,ward,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude,businesses(business_name,latitude,longitude)').eq('id', jobId).maybeSingle(),
   ])
 
   if (!job || job.status !== 'open') redirect('/jobs?error=' + encodeURIComponent('This vacancy is no longer open.'))
@@ -111,8 +111,8 @@ export default async function ApplyPreview({ params, searchParams }: { params: P
   const { supabase, user } = await requireRole(['job_seeker'])
 
   const [jobResult, seekerResult, existingResult, rateResult] = await Promise.all([
-    supabase.from('jobs').select('*,businesses(business_name,latitude,longitude)').eq('id', id).eq('status', 'open').maybeSingle(),
-    supabase.from('job_seeker_profiles').select('*').eq('user_id', user.id).maybeSingle(),
+    supabase.from('jobs').select('id,title,status,category,ward,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude,businesses(business_name,latitude,longitude)').eq('id', id).eq('status', 'open').maybeSingle(),
+    supabase.from('job_seeker_profiles').select('user_id,skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,preferred_categories').eq('user_id', user.id).maybeSingle(),
     supabase.from('applications').select('id,status').eq('job_id', id).eq('job_seeker_id', user.id).maybeSingle(),
     supabase.rpc('application_rate_status', { p_hourly_limit: HOURLY_LIMIT, p_daily_limit: DAILY_LIMIT }),
   ])

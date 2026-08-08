@@ -45,7 +45,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     .select('id,title,description,category,ward,salary_min,salary_max,employment_type,required_skills,preferred_skills,created_at,businesses(business_name)')
     .eq('status', 'open')
     .order('created_at', { ascending: false })
-    .limit(80)
+    .limit(50)
 
   const jobs = (data || []).filter((job: any) => {
     const skills = [...(job.required_skills || []), ...(job.preferred_skills || [])]

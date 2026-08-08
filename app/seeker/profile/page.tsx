@@ -32,7 +32,7 @@ async function saveProfile(formData: FormData) {
 
 export default async function SeekerProfile({ searchParams }: { searchParams: Promise<{error?: string}> }) {
   const { supabase, user, profile } = await requireRole(['job_seeker'])
-  const { data } = await supabase.from('job_seeker_profiles').select('*').eq('user_id', user.id).maybeSingle()
+  const { data } = await supabase.from('job_seeker_profiles').select('user_id,ward,education_level,experience_months,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,skills,preferred_categories,show_availability_to_employers').eq('user_id', user.id).maybeSingle()
   const { error } = await searchParams
   const selectedSkills: string[] = data?.skills || []
   const selectedCategories: string[] = data?.preferred_categories || []

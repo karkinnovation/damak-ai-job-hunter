@@ -25,7 +25,7 @@ export default async function Applicants({ params }: { params: Promise<{ id: str
   const { id } = await params
   const { supabase, user } = await requireRole(['employer'])
   const [{ data: job }, { data: apps }] = await Promise.all([
-    supabase.from('jobs').select('*').eq('id', id).eq('employer_id', user.id).maybeSingle(),
+    supabase.from('jobs').select('id,title,category,ward,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude').eq('id', id).eq('employer_id', user.id).maybeSingle(),
     supabase.from('applications').select('id,job_seeker_id,status,created_at').eq('job_id', id).order('created_at', { ascending: true }).limit(50),
   ])
   if (!job) notFound()
@@ -34,7 +34,7 @@ export default async function Applicants({ params }: { params: Promise<{ id: str
   const [{ data: profiles }, { data: seekers }] = candidateIds.length
     ? await Promise.all([
         supabase.from('profiles').select('id,full_name').in('id', candidateIds),
-        supabase.from('job_seeker_profiles').select('*').in('user_id', candidateIds),
+        supabase.from('job_seeker_profiles').select('user_id,skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,preferred_categories').in('user_id', candidateIds),
       ])
     : [{ data: [] as any[] }, { data: [] as any[] }]
 
@@ -84,7 +84,7 @@ export default async function Applicants({ params }: { params: Promise<{ id: str
                 </div>
                 <div className={`score score${Math.min(4, Math.floor(r.breakdown.score / 20))}`}>{r.breakdown.score}%<small>match</small></div>
               </div>
-              <AIExplanation jobId={id} candidateId={r.app.job_seeker_id} fallback={fallback} auto={index < 5} />
+              <AIExplanation jobId={id} candidateId={r.app.job_seeker_id} fallback={fallback} auto={index < 2} />
               <div className="reasonGrid">
                 <div>{r.breakdown.positives.slice(0, 3).map((x, i) => <p className="positive" key={i}>✓ {employerReason(x)}</p>)}</div>
                 <div>{r.breakdown.mismatches.slice(0, 2).map((x, i) => <p className="warning" key={i}>⚠ {employerReason(x)}</p>)}</div>

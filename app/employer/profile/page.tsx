@@ -21,7 +21,7 @@ async function saveBusiness(formData: FormData) {
 
 export default async function EmployerProfile({ searchParams }: { searchParams: Promise<{error?:string}> }) {
   const { supabase, user, profile } = await requireRole(['employer'])
-  const { data } = await supabase.from('businesses').select('*').eq('user_id', user.id).maybeSingle()
+  const { data } = await supabase.from('businesses').select('id,business_name,business_type,ward,city,phone,latitude,longitude').eq('user_id', user.id).maybeSingle()
   const { error } = await searchParams
   return <section className="narrow"><span className="eyebrow">Employer profile</span><h1>Your local business</h1><p className="muted">Your workplace pin powers travel-distance matching. Public vacancy cards still show only the ward.</p>{error && <p className="error">{error}</p>}
     <form className="stack card" action={saveBusiness}>

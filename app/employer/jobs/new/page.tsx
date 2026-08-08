@@ -7,7 +7,7 @@ import { jobSchema } from '@/lib/validation'
 async function createJob(formData: FormData) {
   'use server'
   const { supabase, user } = await requireRole(['employer'])
-  const { data: business } = await supabase.from('businesses').select('*').eq('user_id', user.id).maybeSingle()
+  const { data: business } = await supabase.from('businesses').select('id,ward,latitude,longitude').eq('user_id', user.id).maybeSingle()
   if (!business) redirect('/employer/profile?error=' + encodeURIComponent('Create your business profile before posting a vacancy.'))
 
   const parsed = jobSchema.safeParse({
@@ -32,7 +32,7 @@ async function createJob(formData: FormData) {
 
 export default async function NewJob({ searchParams }: { searchParams: Promise<{error?:string}> }) {
   const { supabase, user } = await requireRole(['employer'])
-  const { data: business } = await supabase.from('businesses').select('*').eq('user_id', user.id).maybeSingle()
+  const { data: business } = await supabase.from('businesses').select('id,ward,latitude,longitude').eq('user_id', user.id).maybeSingle()
   const { error } = await searchParams
   return <section className="narrow"><span className="eyebrow">Employer · New vacancy</span><h1>Post a local job</h1><p className="muted">Only ask for requirements that genuinely matter; they directly affect candidate rankings.</p>
     {!business && <p className="notice">Create your business profile first. <a href="/employer/profile"><b>Open profile →</b></a></p>}{error && <p className="error">{error}</p>}

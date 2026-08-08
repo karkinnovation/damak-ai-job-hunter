@@ -47,7 +47,8 @@ export default async function Dashboard() {
         .from('jobs')
         .select('id,title,category,ward,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude,businesses(business_name)')
         .eq('status', 'open')
-        .limit(50),
+        .order('created_at', { ascending: false })
+        .limit(30),
       supabase.rpc('application_rate_status', { p_hourly_limit: 2, p_daily_limit: 5 }),
       supabase.rpc('application_fatigue_signals', { p_threshold: 4, p_cooldown_days: 7, p_recent_limit: 30 }),
     ])
