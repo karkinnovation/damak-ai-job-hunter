@@ -152,7 +152,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
           <div className="finderSteps">
             <span><b>01</b> Add your skills & preferences</span>
             <span><b>02</b> Get 0–100 compatibility scores</span>
-            <span><b>03</b> Find the best job</span>
+            <span><b>03</b> Let Awasar find the best Job for you</span>
           </div>
           <Link className="button" href="/auth?role=job_seeker">Create Profile Now</Link>
         </div>
