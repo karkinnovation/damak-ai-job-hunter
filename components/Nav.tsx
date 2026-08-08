@@ -34,21 +34,17 @@ export async function Nav() {
           flexShrink: 0,
         }}
       >
-        <Image
-          src="/awasar.png"
-          alt="Awasar"
-          width={180}
-          height={52}
-          priority
-          style={{
-            width: '180px',
-            height: '52px',
-            objectFit: 'contain',
-            objectPosition: 'left center',
-            display: 'block',
-            transition: 'transform .15s ease',
-          }}
-        />
+<img
+  src="/awasar.png"
+  alt="Awasar"
+  style={{
+    width: '150px',
+    height: '48px',
+    objectFit: 'cover',
+    objectPosition: 'center',
+    display: 'block',
+  }}
+/>
       </Link>
 
       <nav className="navLinks" aria-label="Main navigation">
@@ -84,7 +80,6 @@ export async function Nav() {
 
         {signedIn ? (
           <div className="navUser">
-            {profile?.full_name && <span className="navName">{profile.full_name}</span>}
             <form action="/logout" method="post">
               <button className="button secondary small" type="submit">Logout</button>
             </form>
