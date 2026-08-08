@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { JOB_CATEGORIES } from '@/lib/constants'
 import RefreshFilterReset from '@/components/RefreshFilterReset'
 import SearchSubmitButton from '@/components/SearchSubmitButton'
+import FastSearchForm from '@/components/FastSearchForm'
 import { CompanyMark } from '@/components/CompanyMark'
 import { IconSearch, IconMapPin, IconBriefcase, IconArrowRight } from '@/components/Icon'
 
@@ -50,12 +51,19 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   const isFiltering = Boolean(q || category || skill || salaryRange)
 
   const supabase = await createClient()
-  const { data } = await supabase
+  let jobsQuery = supabase
     .from('jobs')
     .select('id,title,description,category,ward,salary_min,salary_max,employment_type,required_skills,preferred_skills,created_at,businesses(business_name)')
     .eq('status', 'open')
+
+  if (category) jobsQuery = jobsQuery.eq('category', category)
+  if (salaryRange === 'below25') jobsQuery = jobsQuery.lt('salary_min', 25000)
+  if (salaryRange === '25to75') jobsQuery = jobsQuery.gte('salary_max', 25000).lt('salary_min', 75000)
+  if (salaryRange === '75plus') jobsQuery = jobsQuery.gte('salary_max', 75000)
+
+  const { data } = await jobsQuery
     .order('created_at', { ascending: false })
-    .limit(isFiltering ? 180 : 50)
+    .limit(isFiltering ? 100 : 50)
 
   const jobs = (data || []).filter((job: any) => {
     const skills = [...(job.required_skills || []), ...(job.preferred_skills || [])]
@@ -85,7 +93,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
             </p>
           </div>
 
-          <form className="jobSearch jobSearchHome" action="/" method="get">
+          <FastSearchForm className="jobSearch jobSearchHome" action="/">
             <div className="searchMain">
               <span className="searchIcon"><IconSearch size={19} /></span>
               <input name="q" defaultValue={params.q || ''} placeholder="Job title, skill or company" aria-label="Search jobs" />
@@ -102,7 +110,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
             </select>
             <input name="skill" defaultValue={params.skill || ''} placeholder="Skill (optional), e.g. Excel" aria-label="Required skill" />
             <SearchSubmitButton />
-          </form>
+          </FastSearchForm>
 
           <div className="quickCategories" aria-label="Popular job categories">
             <span>Popular:</span>

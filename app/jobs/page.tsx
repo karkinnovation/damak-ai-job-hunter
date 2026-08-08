@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { JOB_CATEGORIES } from '@/lib/constants'
 import RefreshFilterReset from '@/components/RefreshFilterReset'
 import SearchSubmitButton from '@/components/SearchSubmitButton'
+import FastSearchForm from '@/components/FastSearchForm'
 import { CompanyMark } from '@/components/CompanyMark'
 import { IconSearch, IconMapPin, IconWallet, IconBriefcase, IconArrowRight, IconSparkle } from '@/components/Icon'
 
@@ -50,12 +51,19 @@ export default async function Jobs({ searchParams }: { searchParams: SearchParam
   const isFiltering = Boolean(q || category || skill || salaryRange)
 
   const supabase = await createClient()
-  const { data } = await supabase
+  let jobsQuery = supabase
     .from('jobs')
     .select('id,title,description,category,ward,salary_min,salary_max,employment_type,working_start,working_end,required_skills,preferred_skills,businesses(business_name)')
-    .eq('status','open')
-    .order('created_at',{ascending:false})
-    .limit(isFiltering ? 200 : 100)
+    .eq('status', 'open')
+
+  if (category) jobsQuery = jobsQuery.eq('category', category)
+  if (salaryRange === 'below25') jobsQuery = jobsQuery.lt('salary_min', 25000)
+  if (salaryRange === '25to75') jobsQuery = jobsQuery.gte('salary_max', 25000).lt('salary_min', 75000)
+  if (salaryRange === '75plus') jobsQuery = jobsQuery.gte('salary_max', 75000)
+
+  const { data } = await jobsQuery
+    .order('created_at', { ascending: false })
+    .limit(isFiltering ? 120 : 80)
 
   const jobs = (data || []).filter((job: any) => {
     const skills = [...(job.required_skills || []), ...(job.preferred_skills || [])]
@@ -81,7 +89,7 @@ export default async function Jobs({ searchParams }: { searchParams: SearchParam
         <p className="smartMatchText"><IconSparkle size={14} /> Complete your profile to get compatibility-ranked job recommendations.</p>
       </div>
 
-      <form className="jobSearch compactSearch" action="/jobs" method="get">
+      <FastSearchForm className="jobSearch compactSearch" action="/jobs">
         <div className="searchMain"><span className="searchIcon"><IconSearch size={19} /></span><input name="q" defaultValue={params.q || ''} placeholder="Search title, skill or company" /></div>
         <select name="category" defaultValue={category}><option value="">All categories</option>{JOB_CATEGORIES.map(item => <option key={item} value={item}>{item}</option>)}</select>
         <select name="salaryRange" defaultValue={salaryRange} aria-label="Expected salary">
@@ -92,7 +100,7 @@ export default async function Jobs({ searchParams }: { searchParams: SearchParam
         </select>
         <input name="skill" defaultValue={params.skill || ''} placeholder="Skill (optional), e.g. Excel" />
         <SearchSubmitButton className="button" />
-      </form>
+      </FastSearchForm>
 
       {(q || category || skill || salaryRange) && <div className="filterSummary"><span>{jobs.length} result{jobs.length === 1 ? '' : 's'}</span><Link href="/jobs">Clear filters</Link></div>}
 
