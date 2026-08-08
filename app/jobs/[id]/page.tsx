@@ -7,7 +7,7 @@ async function apply(formData: FormData) {
   'use server'
   const { supabase, user } = await requireRole(['job_seeker'])
   const jobId = String(formData.get('job_id') || '')
-  const { data: seeker } = await supabase.from('job_seeker_profiles').select('id').eq('user_id', user.id).maybeSingle()
+  const { data: seeker } = await supabase.from('job_seeker_profiles').select('user_id').eq('user_id', user.id).maybeSingle()
   if (!seeker) redirect('/seeker/profile?error=' + encodeURIComponent('Complete your profile before applying.'))
   const { error } = await supabase.from('applications').insert({ job_id:jobId, job_seeker_id:user.id, status:'applied' })
   if (error && error.code !== '23505') redirect(`/jobs/${jobId}?error=` + encodeURIComponent(error.message))
