@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { requireRole } from '@/lib/auth'
-import { calculateMatch, fallbackExplanation } from '@/lib/matching'
+import { calculateMatch, employerFallbackExplanation, employerReason } from '@/lib/matching'
 import { AIExplanation } from '@/components/AIExplanation'
 import { ApplicationStatus } from '@/components/ApplicationStatus'
 
@@ -73,7 +73,7 @@ export default async function Applicants({ params }: { params: Promise<{ id: str
       </div>
       <div className="list">
         {scored.length ? scored.map((r, index) => {
-          const fallback = fallbackExplanation(r.breakdown.score, r.breakdown.positives, r.breakdown.mismatches)
+          const fallback = employerFallbackExplanation(r.breakdown.score, r.breakdown.positives, r.breakdown.mismatches)
           return (
             <article className="card" key={r.app.id}>
               <div className="cardTop">
@@ -86,8 +86,8 @@ export default async function Applicants({ params }: { params: Promise<{ id: str
               </div>
               <AIExplanation jobId={id} candidateId={r.app.job_seeker_id} fallback={fallback} auto={index < 5} />
               <div className="reasonGrid">
-                <div>{r.breakdown.positives.slice(0, 3).map((x, i) => <p className="positive" key={i}>✓ {x}</p>)}</div>
-                <div>{r.breakdown.mismatches.slice(0, 2).map((x, i) => <p className="warning" key={i}>⚠ {x}</p>)}</div>
+                <div>{r.breakdown.positives.slice(0, 3).map((x, i) => <p className="positive" key={i}>✓ {employerReason(x)}</p>)}</div>
+                <div>{r.breakdown.mismatches.slice(0, 2).map((x, i) => <p className="warning" key={i}>⚠ {employerReason(x)}</p>)}</div>
               </div>
               <p><span className="muted">Candidate status: </span><ApplicationStatus status={r.app.status} compact /></p>
               <div className="heroActions">

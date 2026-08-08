@@ -5,6 +5,7 @@ type ExplainArgs = {
   breakdown: MatchBreakdown
   seeker: Record<string, unknown>
   job: Record<string, unknown>
+  audience?: 'job_seeker' | 'employer'
 }
 
 type GeminiResponse = {
@@ -13,12 +14,22 @@ type GeminiResponse = {
   }>
 }
 
-const SYSTEM_INSTRUCTION = `You explain job compatibility for a local employment platform in Damak, Nepal.
+const BASE_INSTRUCTION = `You explain job compatibility for a local employment platform in Damak, Nepal.
 The numeric suitability score is already calculated by a deterministic matching engine. Never recalculate, round, increase, decrease, or contradict it.
 Use 2-4 short sentences in plain English. Mention the strongest matching factors and the most important mismatch when one exists.
 Never infer sensitive personal traits. Never promise a job, automatically reject a candidate, or make the final hiring decision.`
 
-export async function explainMatch({ score, breakdown, seeker, job }: ExplainArgs) {
+function systemInstruction(audience: 'job_seeker' | 'employer') {
+  if (audience === 'employer') {
+    return `${BASE_INSTRUCTION}
+You are speaking to the employer about an applicant. Refer to the applicant as “the candidate” or “this candidate”. Never describe the employer as the job seeker. Never say “your skills”, “your experience”, “your salary expectation”, “your availability”, or “your travel preference” when those details belong to the candidate.`
+  }
+
+  return `${BASE_INSTRUCTION}
+You are speaking directly to the job seeker. You may use “you” and “your” for the job seeker's own profile and preferences.`
+}
+
+export async function explainMatch({ score, breakdown, seeker, job, audience = 'job_seeker' }: ExplainArgs) {
   const fallback = fallbackExplanation(score, breakdown.positives, breakdown.mismatches)
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) return fallback
@@ -36,7 +47,7 @@ export async function explainMatch({ score, breakdown, seeker, job }: ExplainArg
         },
         body: JSON.stringify({
           systemInstruction: {
-            parts: [{ text: SYSTEM_INSTRUCTION }],
+            parts: [{ text: systemInstruction(audience) }],
           },
           contents: [{
             role: 'user',

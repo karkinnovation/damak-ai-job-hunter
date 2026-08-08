@@ -114,10 +114,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
             <span className="eyebrow">{isFiltering ? 'Search results' : 'Latest vacancies'}</span>
             <h2>{isFiltering ? `${jobs.length} matching job${jobs.length === 1 ? '' : 's'}` : 'Jobs you can apply for now'}</h2>
           </div>
-          <div className="headerUtility">
-            {isFiltering && <Link className="button secondary" href="/#vacancies">Clear filters</Link>}
-            <p className="smartMatchText">✦ Complete your profile to get compatibility-ranked job recommendations.</p>
-          </div>
+          {isFiltering && <Link className="button secondary" href="/#vacancies">Clear filters</Link>}
         </div>
 
         <div className="vacancyGrid">
@@ -150,14 +147,14 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
           <div>
             <span className="eyebrow">Smart matching</span>
             <h2>Build your job profile and find the best match.</h2>
-            <p>Add your skills and preferences once, then Awasar ranks the jobs that fit you best.</p>
+            <p>Add your skills &amp; preferences.<br />Let Awasar find the best job for you.</p>
           </div>
           <div className="finderSteps">
             <span><b>01</b> Add your skills & preferences</span>
             <span><b>02</b> Get 0–100 compatibility scores</span>
-            <span><b>03</b> Understand why each job fits</span>
+            <span><b>03</b> Find the best job</span>
           </div>
-          <Link className="button" href="/auth?role=job_seeker">Create profile now</Link>
+          <Link className="button" href="/auth?role=job_seeker">Create Profile Now</Link>
         </div>
       </section>
     </>

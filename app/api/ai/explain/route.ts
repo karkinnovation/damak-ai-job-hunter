@@ -56,6 +56,7 @@ export async function POST(request: Request) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle()
   if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 403 })
 
+  const audience: 'job_seeker' | 'employer' = profile.role === 'employer' ? 'employer' : 'job_seeker'
   const { jobId, candidateId } = parsed.data
   let candidate = userId
   let jobQuery = supabase.from('jobs').select('*').eq('id', jobId)
@@ -87,22 +88,25 @@ export async function POST(request: Request) {
   const breakdown = calculateMatch(matchInput(seeker, job))
   const fallback = fallbackExplanation(breakdown.score, breakdown.positives, breakdown.mismatches)
 
-  const { data: cached } = await supabase
-    .from('match_results')
-    .select('score,explanation,calculated_at')
-    .eq('job_id', jobId)
-    .eq('job_seeker_id', candidate)
-    .maybeSingle()
+  const { data: cached } = audience === 'job_seeker'
+    ? await supabase
+        .from('match_results')
+        .select('score,explanation,calculated_at')
+        .eq('job_id', jobId)
+        .eq('job_seeker_id', candidate)
+        .maybeSingle()
+    : { data: null }
 
   const freshEnough = cached?.calculated_at
     ? Date.now() - new Date(cached.calculated_at).getTime() < 12 * 60 * 60 * 1000
     : false
 
-  if (cached && cached.score === breakdown.score && cached.explanation && freshEnough) {
+  if (audience === 'job_seeker' && cached && cached.score === breakdown.score && cached.explanation && freshEnough) {
     return NextResponse.json({ explanation: cached.explanation, cached: true })
   }
 
   const explanation = await explainMatch({
+    audience,
     score: breakdown.score,
     breakdown,
     seeker: {
@@ -129,7 +133,7 @@ export async function POST(request: Request) {
     },
   })
 
-  if (process.env.GEMINI_API_KEY && explanation !== fallback) {
+  if (audience === 'job_seeker' && process.env.GEMINI_API_KEY && explanation !== fallback) {
     await supabase.from('match_results').upsert({
       job_id: jobId,
       job_seeker_id: candidate,

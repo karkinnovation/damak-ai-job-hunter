@@ -161,3 +161,21 @@ export function fallbackExplanation(score: number, positives: string[], mismatch
   const bad = mismatches.slice(0, 2).join('. ')
   return `${band}. ${good || 'Some profile details align with this vacancy'}.${bad ? ` Main mismatch: ${bad}.` : ''}`
 }
+
+
+/** Convert seeker-facing matching copy into employer-facing copy.
+ * The score stays identical; only pronouns/context change so employers are
+ * never described as if they were the applicant.
+ */
+export function employerReason(reason: string) {
+  return reason
+    .replace(/\byour\b/gi, "the candidate's")
+    .replace(/\bprofile has\b/gi, 'candidate has')
+}
+
+export function employerFallbackExplanation(score: number, positives: string[], mismatches: string[]) {
+  const band = score >= 85 ? 'Strong candidate match' : score >= 70 ? 'Good candidate match' : score >= 50 ? 'Possible candidate match' : 'Low candidate match'
+  const good = positives.map(employerReason).slice(0, 3).join('. ')
+  const bad = mismatches.map(employerReason).slice(0, 2).join('. ')
+  return `${band}. ${good || 'Some candidate details align with this vacancy'}.${bad ? ` Main mismatch: ${bad}.` : ''}`
+}

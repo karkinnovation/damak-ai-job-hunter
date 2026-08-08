@@ -81,3 +81,16 @@ form.stack{display:grid;gap:16px}.field{display:grid;gap:7px}.field label{font-s
 /* Dashboard: surface the two best matches immediately after login */
 .dashboardMatches{margin-top:42px}.dashboardMatchHeader{align-items:flex-end}.bestMatchGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.dashboardMatchCard{display:flex;flex-direction:column;min-height:300px}.dashboardMatchTop{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:18px}.matchRank{font-size:12px;font-weight:900;color:#344054}.matchScoreBadge{display:inline-flex;align-items:center;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:900;background:#f2f4f7;color:#475467}.matchScore4{background:#ecfdf3;color:#067647}.matchScore3{background:#eff8ff;color:#175cd3}.matchScore2{background:#fffaeb;color:#b54708}.matchScore1,.matchScore0{background:#fef3f2;color:#b42318}.dashboardMatchCard h3{font-size:23px;margin:6px 0}.dashboardReasons{margin:4px 0 18px}.dashboardReasons p{font-size:13px;margin:7px 0}.dashboardMatchCard .button{margin-top:auto}.bestMatchEmpty{grid-column:1/-1}.dashboardProfileCta{grid-template-columns:1fr auto}.dashboardProfileCta .button{grid-column:auto}
 @media(max-width:680px){.bestMatchGrid{grid-template-columns:1fr}.dashboardMatches{margin-top:32px}.dashboardMatchTop{align-items:flex-start}.dashboardProfileCta{grid-template-columns:1fr}.dashboardProfileCta .button{width:100%}}
+
+/* UX v6: tighter vertical rhythm and clearer homepage CTA */
+.sectionHeader p{margin:4px 0 0}
+.homeSectionHeader{margin-bottom:12px;align-items:flex-end}
+.finderCallout p{margin-top:4px}
+.finderCallout .button{text-transform:none}
+@media(max-width:680px){
+  .homeJobs{padding-top:24px}
+  .homeSectionHeader{gap:8px;margin-bottom:10px}
+  .homeSectionHeader h2{margin-bottom:0}
+  .finderCallout{margin-top:30px;gap:18px}
+  .finderCallout h2{margin-bottom:5px}
+}
