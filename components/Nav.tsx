@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 
 export async function Nav() {
@@ -33,19 +34,19 @@ export async function Nav() {
           flexShrink: 0,
         }}
       >
-        <img
+        <Image
           src="/awasar.png"
           alt="Awasar"
           width={180}
           height={52}
-          loading="eager"
-          decoding="async"
+          priority
           style={{
             width: '180px',
             height: '52px',
             objectFit: 'contain',
             objectPosition: 'left center',
             display: 'block',
+            transition: 'transform .15s ease',
           }}
         />
       </Link>

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { JOB_CATEGORIES } from '@/lib/constants'
 import RefreshFilterReset from '@/components/RefreshFilterReset'
+import SearchSubmitButton from '@/components/SearchSubmitButton'
 
 type SearchParams = Promise<{ q?: string; category?: string; skill?: string; salaryRange?: string }>
 
@@ -81,7 +82,7 @@ export default async function Jobs({ searchParams }: { searchParams: SearchParam
           <option value="75plus">NPR 75,000 and above</option>
         </select>
         <input name="skill" defaultValue={params.skill || ''} placeholder="Skill (optional), e.g. Excel" />
-        <button className="button" type="submit">Find jobs</button>
+        <SearchSubmitButton className="button" />
       </form>
 
       {(q || category || skill || salaryRange) && <div className="filterSummary"><span>{jobs.length} result{jobs.length === 1 ? '' : 's'}</span><Link href="/jobs">Clear filters</Link></div>}

@@ -246,3 +246,70 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 @media(prefers-reduced-motion:reduce){
   *{scroll-behavior:auto!important;transition:none!important;animation:none!important}
 }
+
+/* ===== UI polish: motion, feedback, accessibility, perf ===== */
+:root{--ease:cubic-bezier(.22,.9,.32,1);--ease-out:cubic-bezier(.16,1,.3,1)}
+
+@keyframes fadeInUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{0%{opacity:0;transform:scale(.85)}70%{opacity:1;transform:scale(1.04)}100%{transform:scale(1)}}
+@keyframes shimmer{0%{background-position:-200px 0}100%{background-position:calc(200px + 100%) 0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* page + section entrance */
+.pageFade{animation:fadeIn .35s var(--ease) both}
+main{animation:fadeIn .3s var(--ease) both}
+.jobHero,.hero,.authPage>*{animation:fadeInUp .5s var(--ease) both}
+
+/* card + list entrance, staggered so items feel alive instead of popping in at once */
+.card,.matchCard,.jobRow,.vacancyCard,.dashboardMatchCard,.applicationCard{animation:fadeInUp .5s var(--ease) both}
+.list > *:nth-child(1), .grid > *:nth-child(1), .grid2 > *:nth-child(1), .vacancyGrid > *:nth-child(1), .bestMatchGrid > *:nth-child(1), .applicationList > *:nth-child(1), .featureGrid > *:nth-child(1) { animation-delay: 0s }
+.list > *:nth-child(2), .grid > *:nth-child(2), .grid2 > *:nth-child(2), .vacancyGrid > *:nth-child(2), .bestMatchGrid > *:nth-child(2), .applicationList > *:nth-child(2), .featureGrid > *:nth-child(2) { animation-delay: 0.06s }
+.list > *:nth-child(3), .grid > *:nth-child(3), .grid2 > *:nth-child(3), .vacancyGrid > *:nth-child(3), .bestMatchGrid > *:nth-child(3), .applicationList > *:nth-child(3), .featureGrid > *:nth-child(3) { animation-delay: 0.12s }
+.list > *:nth-child(4), .grid > *:nth-child(4), .grid2 > *:nth-child(4), .vacancyGrid > *:nth-child(4), .bestMatchGrid > *:nth-child(4), .applicationList > *:nth-child(4), .featureGrid > *:nth-child(4) { animation-delay: 0.18s }
+.list > *:nth-child(5), .grid > *:nth-child(5), .grid2 > *:nth-child(5), .vacancyGrid > *:nth-child(5), .bestMatchGrid > *:nth-child(5), .applicationList > *:nth-child(5), .featureGrid > *:nth-child(5) { animation-delay: 0.24s }
+.list > *:nth-child(6), .grid > *:nth-child(6), .grid2 > *:nth-child(6), .vacancyGrid > *:nth-child(6), .bestMatchGrid > *:nth-child(6), .applicationList > *:nth-child(6), .featureGrid > *:nth-child(6) { animation-delay: 0.3s }
+.list > *:nth-child(7), .grid > *:nth-child(7), .grid2 > *:nth-child(7), .vacancyGrid > *:nth-child(7), .bestMatchGrid > *:nth-child(7), .applicationList > *:nth-child(7), .featureGrid > *:nth-child(7) { animation-delay: 0.36s }
+.list > *:nth-child(8), .grid > *:nth-child(8), .grid2 > *:nth-child(8), .vacancyGrid > *:nth-child(8), .bestMatchGrid > *:nth-child(8), .applicationList > *:nth-child(8), .featureGrid > *:nth-child(8) { animation-delay: 0.42s }
+.list > *:nth-child(9), .grid > *:nth-child(9), .grid2 > *:nth-child(9), .vacancyGrid > *:nth-child(9), .bestMatchGrid > *:nth-child(9), .applicationList > *:nth-child(9), .featureGrid > *:nth-child(9) { animation-delay: 0.48s }
+.list > *:nth-child(n+10), .grid > *:nth-child(n+10), .grid2 > *:nth-child(n+10), .vacancyGrid > *:nth-child(n+10), .bestMatchGrid > *:nth-child(n+10), .applicationList > *:nth-child(n+10), .featureGrid > *:nth-child(n+10) { animation-delay: 0.5s }
+
+/* score badge gets a little pop so the match % feels like a result, not static text */
+.score{animation:popIn .5s .1s var(--ease-out) both}
+
+/* smoother, more consistent hover/press feedback everywhere */
+.card,.vacancyCard,.jobRow,.matchCard{transition:transform .18s var(--ease),box-shadow .22s var(--ease),border-color .18s var(--ease)}
+.card:hover,.jobRow:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:#cbd3ef}
+.button{transition:transform .12s var(--ease),background .15s ease,border-color .15s ease,box-shadow .18s ease}
+.button:active{transform:translateY(0) scale(.97)}
+.pill,.categoryPill,.locationPill,.quickCategories>a{transition:transform .15s var(--ease),background .15s ease,color .15s ease,border-color .15s ease}
+.quickCategories>a:hover{transform:translateY(-1px)}
+
+.brand:hover img{transform:scale(1.04)}
+
+/* nav links: animated underline instead of a flat color swap, makes the current action clearer */
+.navLinks>a:not(.button){position:relative;transition:color .15s ease}
+.navLinks>a:not(.button)::after{content:'';position:absolute;left:0;right:100%;bottom:-4px;height:2px;background:var(--primary);border-radius:2px;transition:right .2s var(--ease-out)}
+.navLinks>a:not(.button):hover::after{right:0}
+
+/* clear, visible keyboard focus everywhere (accessibility = easier to use) */
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.button:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:6px}
+
+/* inputs feel more responsive when focused */
+.field input,.field select,.field textarea,.jobSearch input,.jobSearch select{transition:border-color .15s var(--ease),box-shadow .2s var(--ease),transform .12s var(--ease)}
+
+/* status progress dots animate in so an application update feels alive, not just re-rendered */
+.statusStep .statusDot{transition:background .25s var(--ease),border-color .25s var(--ease),box-shadow .25s var(--ease)}
+
+/* reusable skeleton for anything that loads async in future work */
+.skeleton{position:relative;overflow:hidden;background:#eef0f4;border-radius:8px;color:transparent}
+.skeleton::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);background-size:200px 100%;animation:shimmer 1.3s infinite}
+
+/* lightweight inline spinner for submit buttons */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-right:7px;vertical-align:-2px}
+.button.secondary .spinner{border-color:rgba(52,64,84,.25);border-top-color:#344054}
+
+/* respect users who've asked for less motion */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
