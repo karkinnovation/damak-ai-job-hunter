@@ -17,8 +17,11 @@ export async function Nav() {
   return (
     <header className="nav">
       <Link className="brand" href="/" aria-label="Awasar home">
-        <span className="brandNepali">अवसर</span>
-        <span className="brandLatin">Awasar</span>
+        <img
+  src="/awasar.png"
+  alt="Awasar"
+  className="brand-logo"
+/>
       </Link>
       <nav className="navLinks" aria-label="Main navigation">
         <Link href="/jobs">Find Jobs</Link>
@@ -40,7 +43,6 @@ export async function Nav() {
         {signedIn && !profile && <Link href="/dashboard">Dashboard</Link>}
         {signedIn ? (
           <div className="navUser">
-            {profile?.full_name && <span className="navName">{profile.full_name}</span>}
             <form action="/logout" method="post"><button className="button secondary small">Logout</button></form>
           </div>
         ) : <Link className="button small" href="/auth">Login / Register</Link>}

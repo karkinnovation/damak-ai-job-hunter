@@ -65,7 +65,12 @@ form.stack{display:grid;gap:16px}.field{display:grid;gap:7px}.field label{font-s
   .quickCategories{margin-top:12px}
 }
 
-
+.brand-logo {
+  display: block;
+  height: 42px;
+  width: auto;
+  object-fit: contain;
+}
 /* Search UX v4: simplified copy + three salary bands */
 .heroOneLiner{font-size:17px!important;line-height:1.5!important;margin:0 0 28px!important;color:var(--muted)!important;max-width:none!important}
 .headerUtility{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;max-width:520px}
@@ -77,7 +82,11 @@ form.stack{display:grid;gap:16px}.field{display:grid;gap:7px}.field label{font-s
   .headerUtility{align-items:flex-start;justify-content:flex-start;max-width:none}
   .smartMatchText{font-size:12px}
 }
-
+@media (max-width: 640px) {
+  .brand-logo {
+    height: 34px;
+  }
+}
 /* Dashboard: surface the two best matches immediately after login */
 .dashboardMatches{margin-top:42px}.dashboardMatchHeader{align-items:flex-end}.bestMatchGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.dashboardMatchCard{display:flex;flex-direction:column;min-height:300px}.dashboardMatchTop{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:18px}.matchRank{font-size:12px;font-weight:900;color:#344054}.matchScoreBadge{display:inline-flex;align-items:center;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:900;background:#f2f4f7;color:#475467}.matchScore4{background:#ecfdf3;color:#067647}.matchScore3{background:#eff8ff;color:#175cd3}.matchScore2{background:#fffaeb;color:#b54708}.matchScore1,.matchScore0{background:#fef3f2;color:#b42318}.dashboardMatchCard h3{font-size:23px;margin:6px 0}.dashboardReasons{margin:4px 0 18px}.dashboardReasons p{font-size:13px;margin:7px 0}.dashboardMatchCard .button{margin-top:auto}.bestMatchEmpty{grid-column:1/-1}.dashboardProfileCta{grid-template-columns:1fr auto}.dashboardProfileCta .button{grid-column:auto}
 @media(max-width:680px){.bestMatchGrid{grid-template-columns:1fr}.dashboardMatches{margin-top:32px}.dashboardMatchTop{align-items:flex-start}.dashboardProfileCta{grid-template-columns:1fr}.dashboardProfileCta .button{width:100%}}
