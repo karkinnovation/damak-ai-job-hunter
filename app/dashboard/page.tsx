@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { requireUser } from '@/lib/auth'
 import { ApplicationStatus } from '@/components/ApplicationStatus'
 import { calculateMatch } from '@/lib/matching'
+import { ApplicationFatigueNudge } from '@/components/ApplicationFatigueNudge'
+import { fatigueNudgeCopy } from '@/lib/applicationInsights'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,6 +33,8 @@ export default async function Dashboard() {
       { count: applications },
       { data: latestApplication },
       { data: openJobs },
+      rateResult,
+      fatigueResult,
     ] = await Promise.all([
       supabase
         .from('job_seeker_profiles')
@@ -44,7 +48,14 @@ export default async function Dashboard() {
         .select('id,title,category,ward,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude,businesses(business_name)')
         .eq('status', 'open')
         .limit(50),
+      supabase.rpc('application_rate_status', { p_hourly_limit: 2, p_daily_limit: 5 }),
+      supabase.rpc('application_fatigue_signals', { p_threshold: 4, p_cooldown_days: 7, p_recent_limit: 30 }),
     ])
+
+    const rate = (rateResult.data || {}) as any
+    const fatigueSignals = Array.isArray(fatigueResult.data) ? fatigueResult.data : []
+    const fatigueSignal = fatigueSignals[0] as { pattern_key: string; occurrences: number } | undefined
+    const fatigueCopy = fatigueSignal ? fatigueNudgeCopy(fatigueSignal.pattern_key, Number(fatigueSignal.occurrences)) : null
 
     const profileComplete = !seekerError && !!seeker && seeker.latitude != null && seeker.longitude != null
 
@@ -100,6 +111,16 @@ export default async function Dashboard() {
           <Link className="button secondary" href="/jobs">Browse jobs</Link>
         </div>
 
+        {fatigueSignal && fatigueCopy && (
+          <ApplicationFatigueNudge
+            patternKey={fatigueSignal.pattern_key}
+            title={fatigueCopy.title}
+            message={fatigueCopy.message}
+            actionLabel={fatigueCopy.actionLabel}
+            actionHref={fatigueCopy.actionHref}
+          />
+        )}
+
         <div className="grid">
           <div className="card kpi">
             <span className="muted">Profile</span>
@@ -110,6 +131,7 @@ export default async function Dashboard() {
           <div className="card kpi">
             <span className="muted">Applications</span>
             <span className="stat">{applications || 0}</span>
+            <span className="muted">{rateResult.error ? 'Run v9 migration' : `${Number(rate.daily_remaining ?? 5)} remaining today`}</span>
             <Link href="/seeker/applications">View all applications →</Link>
           </div>
 

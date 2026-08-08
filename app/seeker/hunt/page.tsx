@@ -40,7 +40,7 @@ export default async function HuntJobs() {
         <div>
           <span className="eyebrow">AI Job Match</span>
           <h1>Your best local matches</h1>
-          <p className="muted">Scores load instantly from the matching engine. Gemini explanations load separately, so AI never blocks the results page.</p>
+          <p className="muted">Scores load instantly from the matching engine. AI explanations load separately, so AI never blocks the results page.</p>
         </div>
         <Link className="button secondary" href="/seeker/profile">Edit profile</Link>
       </div>

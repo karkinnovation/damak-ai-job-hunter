@@ -106,3 +106,52 @@ form.stack{display:grid;gap:16px}.field{display:grid;gap:7px}.field label{font-s
 .applyPreviewPage{display:grid;gap:16px}.distanceSummary{display:flex;align-items:center;gap:18px}.distanceSummary.within{border-color:#abefc6;background:#f6fef9}.distanceSummary.outside{border-color:#fedf89;background:#fffcf5}.distanceNumber{font-size:34px;font-weight:950;letter-spacing:-.04em;color:var(--primary)}.distanceSummary p{margin:4px 0 0}.mapPreviewCard h3{margin-bottom:4px}.mapPreviewCard>p{margin:0 0 14px;font-size:12px}.distancePreviewMap{height:300px}.applyConfirmActions{display:flex;gap:10px;align-items:center}.applyConfirmActions form{margin:0}
 @media(max-width:900px){.talentFilters{grid-template-columns:1fr 1fr}.talentGrid{grid-template-columns:1fr}}
 @media(max-width:680px){.mapPickerHead{flex-direction:column}.mapPickerHead .button{width:100%}.leafletMap{height:285px}.mapPickerStatus{align-items:flex-start;flex-direction:column}.talentFilters{grid-template-columns:1fr}.talentFilterActions{align-items:stretch}.talentFilterActions .button{flex:1}.anonymousFacts{grid-template-columns:1fr}.distanceSummary{align-items:flex-start;flex-direction:column;gap:8px}.distancePreviewMap{height:260px}.applyConfirmActions{flex-direction:column;align-items:stretch}.applyConfirmActions .button,.applyConfirmActions form,.applyConfirmActions form button{width:100%}}
+
+/* Awasar v9: application fatigue + rate-limit UI */
+.fatigueNudge {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 16px 0 22px;
+  border-left: 4px solid var(--primary, #0f766e);
+}
+.fatigueNudge h3 { margin: 5px 0 6px; }
+.fatigueNudge p { margin: 0 0 12px; }
+.nudgeDismiss {
+  border: 0;
+  background: transparent;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--muted, #64748b);
+  padding: 2px 5px;
+}
+.applicationLimitCard {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  min-width: min(100%, 360px);
+}
+.applicationLimitCard strong { display: block; margin-top: 4px; }
+.lowMatchNotice { margin: 0; padding: 10px 12px; border-radius: 12px; background: #fff7ed; color: #9a3412; }
+.matchBeforeApply { display: flex; justify-content: space-between; align-items: center; gap: 18px; flex-wrap: wrap; }
+.matchBeforeApply p { width: 100%; margin: 0; }
+.applyMatchScore { font-size: 1.5rem; }
+.applyGuardActions { align-items: flex-start; }
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, .55);
+}
+.lowMatchModal { width: min(520px, 100%); box-shadow: 0 24px 70px rgba(15, 23, 42, .2); }
+.lowMatchModal h2 { margin: 7px 0 10px; }
+@media (max-width: 640px) {
+  .fatigueNudge { gap: 10px; }
+  .applicationLimitCard { min-width: 100%; }
+  .applyGuardActions { display: grid; width: 100%; }
+}
