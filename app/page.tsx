@@ -69,9 +69,8 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
       <section className="jobHero">
         <div className="jobHeroInner">
           <div className="heroCopy">
-            <span className="eyebrow">अवसर · Local jobs made easier</span>
+            <span className="eyebrow">अवसर · Job search made easier</span>
             <h1>Find your dream job.</h1>
-            <p className="heroOneLiner">Search jobs locally · Smart recommendations · Easy search</p>
           </div>
 
           <form className="jobSearch jobSearchHome" action="/" method="get">
@@ -113,6 +112,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
           <div>
             <span className="eyebrow">{isFiltering ? 'Search results' : 'Latest vacancies'}</span>
             <h2>{isFiltering ? `${jobs.length} matching job${jobs.length === 1 ? '' : 's'}` : 'Jobs you can apply for now'}</h2>
+            {!isFiltering && <p className="homeJobsSecondary">Search jobs locally · Smart recommendations · Easy search</p>}
           </div>
           {isFiltering && <Link className="button secondary" href="/#vacancies">Clear filters</Link>}
         </div>

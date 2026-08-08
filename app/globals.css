@@ -94,3 +94,8 @@ form.stack{display:grid;gap:16px}.field{display:grid;gap:7px}.field label{font-s
   .finderCallout{margin-top:30px;gap:18px}
   .finderCallout h2{margin-bottom:5px}
 }
+
+
+/* UX v7: move homepage secondary line under vacancies heading */
+.homeJobsSecondary{margin:3px 0 0!important;color:var(--muted);font-size:14px;line-height:1.35}
+@media(max-width:680px){.homeJobsSecondary{margin-top:2px!important;font-size:13px}}
