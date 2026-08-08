@@ -26,17 +26,17 @@ export async function Nav() {
     alignItems: 'center',
   }}
 >
-  <img
-    src="/awasar.png"
-    alt="Awasar"
-    style={{
-      width: '150px',
-      height: '150px',
-      objectFit: 'contain',
-      transform: 'scale(2.5)',
-      transformOrigin: 'left center',
-    }}
-  />
+<img
+  src="/awasar.png"
+  alt="Awasar"
+  style={{
+    width: '150px',
+    height: '48px',
+    objectFit: 'cover',
+    objectPosition: 'center',
+    display: 'block',
+  }}
+/>
 </div>
       </Link>
       <nav className="navLinks" aria-label="Main navigation">
