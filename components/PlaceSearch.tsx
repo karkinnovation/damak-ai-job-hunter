@@ -1,6 +1,6 @@
 'use client'
 
-import { KeyboardEvent, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export type PlaceResult = {
   id: string
@@ -21,60 +21,42 @@ type CachedSearch = {
 }
 
 const CACHE_TTL = 24 * 60 * 60 * 1000
+const DEBOUNCE_MS = 450
+const MIN_QUERY_LENGTH = 3
 
-/*
- * IMPORTANT:
- * This component can live inside the seeker/employer profile <form>.
- * Do NOT render another <form> here. Nested forms are invalid HTML and can
- * cause the outer profile form to submit when the map Search button is clicked.
- *
- * The map search button is therefore type="button", and Enter is intercepted
- * explicitly so it runs geocoding without refreshing/submitting the page.
- */
 export function PlaceSearch({
   onPick,
-  placeholder = 'Search business, landmark or address',
+  placeholder = 'Start typing a business, landmark or place…',
 }: {
   onPick: (place: PlaceResult) => void
   placeholder?: string
 }) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<PlaceResult[]>([])
-  const [status, setStatus] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [open, setOpen] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
 
-  const boxRef = useRef<HTMLDivElement>(null)
+  const rootRef = useRef<HTMLDivElement | null>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const debounceRef = useRef<number | null>(null)
+  const requestIdRef = useRef(0)
 
-  useEffect(() => {
-    function onDocClick(e: MouseEvent) {
-      if (boxRef.current && !boxRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', onDocClick)
-    return () => document.removeEventListener('mousedown', onDocClick)
-  }, [])
-
-  useEffect(() => {
-    return () => abortRef.current?.abort()
-  }, [])
-
-  function cacheKey(value: string) {
-    return `awasar-place:${value.trim().toLowerCase()}`
+  function key(value: string) {
+    return `awasar-live-place:${value.trim().toLowerCase()}`
   }
 
-  function readCache(value: string) {
+  function readCache(value: string): PlaceResult[] | null {
     try {
-      const raw = sessionStorage.getItem(cacheKey(value))
+      const raw = sessionStorage.getItem(key(value))
       if (!raw) return null
 
       const cached = JSON.parse(raw) as CachedSearch
-
-      if (!cached.savedAt || Date.now() - cached.savedAt > CACHE_TTL) {
-        sessionStorage.removeItem(cacheKey(value))
+      if (
+        !cached.savedAt ||
+        Date.now() - cached.savedAt > CACHE_TTL
+      ) {
+        sessionStorage.removeItem(key(value))
         return null
       }
 
@@ -87,191 +69,257 @@ export function PlaceSearch({
   function writeCache(value: string, next: PlaceResult[]) {
     try {
       sessionStorage.setItem(
-        cacheKey(value),
+        key(value),
         JSON.stringify({
           savedAt: Date.now(),
           results: next,
         } satisfies CachedSearch)
       )
     } catch {
-      // Search still works if browser storage is unavailable.
+      // Search still works if storage is unavailable.
     }
   }
 
-  async function search() {
-    if (busy) return
-
-    const q = query.trim()
-
-    if (q.length < 2) {
-      setResults([])
-      setOpen(false)
-      setStatus(
-        'Type at least 2 characters, for example “Kathmandu”, “Pokhara Lakeside” or a business name.'
-      )
-      return
+  useEffect(() => {
+    function outside(event: MouseEvent) {
+      if (
+        rootRef.current &&
+        !rootRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false)
+      }
     }
 
-    const cached = readCache(q)
+    document.addEventListener('mousedown', outside)
 
-    if (cached?.length) {
-      setResults(cached)
-      setOpen(true)
-      setStatus(null)
-      return
+    return () => {
+      document.removeEventListener('mousedown', outside)
+
+      if (debounceRef.current) {
+        window.clearTimeout(debounceRef.current)
+      }
+
+      abortRef.current?.abort()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (debounceRef.current) {
+      window.clearTimeout(debounceRef.current)
     }
 
     abortRef.current?.abort()
 
-    const controller = new AbortController()
-    abortRef.current = controller
+    const q = query.trim()
+
+    if (!q) {
+      setBusy(false)
+      setResults([])
+      setOpen(false)
+      setMessage(null)
+      return
+    }
+
+    if (q.length < MIN_QUERY_LENGTH) {
+      setBusy(false)
+      setResults([])
+      setOpen(false)
+      setMessage(`Type ${MIN_QUERY_LENGTH} or more characters`)
+      return
+    }
+
+    const cached = readCache(q)
+    if (cached) {
+      setResults(cached)
+      setOpen(cached.length > 0)
+      setBusy(false)
+      setMessage(cached.length ? null : 'No matching places yet.')
+      return
+    }
 
     setBusy(true)
-    setStatus('Searching places…')
-    setOpen(false)
+    setMessage(null)
 
-    // Avoid a request hanging indefinitely on slow external geocoding.
-    const timeout = window.setTimeout(() => controller.abort(), 9000)
+    const currentRequest = ++requestIdRef.current
 
-    try {
-      const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`, {
-        method: 'GET',
-        cache: 'no-store',
-        signal: controller.signal,
-      })
+    debounceRef.current = window.setTimeout(async () => {
+      const controller = new AbortController()
+      abortRef.current = controller
 
-      const data = await res.json().catch(() => ({ results: [] }))
-      const next = (data.results || []) as PlaceResult[]
+      try {
+        const response = await fetch(
+          `/api/geocode?q=${encodeURIComponent(q)}`,
+          {
+            method: 'GET',
+            cache: 'no-store',
+            signal: controller.signal,
+          }
+        )
 
-      if (!res.ok) {
+        if (!response.ok) {
+          throw new Error('Place search unavailable')
+        }
+
+        const data = (await response.json()) as {
+          results?: PlaceResult[]
+        }
+
+        // Ignore stale responses from an older typed query.
+        if (currentRequest !== requestIdRef.current) return
+
+        const next = data.results || []
+
+        setResults(next)
+        setOpen(next.length > 0)
+        setMessage(
+          next.length
+            ? null
+            : 'No matching place found. Keep typing or tap the map directly.'
+        )
+
+        writeCache(q, next)
+      } catch (error) {
+        if ((error as Error)?.name === 'AbortError') return
+        if (currentRequest !== requestIdRef.current) return
+
         setResults([])
         setOpen(false)
-        setStatus(
-          data?.error ||
-            'Place search is temporarily unavailable. You can still tap the map.'
-        )
-        return
+        setMessage('Live places are unavailable right now. You can still tap the map.')
+      } finally {
+        if (currentRequest === requestIdRef.current) {
+          setBusy(false)
+        }
       }
+    }, DEBOUNCE_MS)
 
-      if (!next.length) {
-        setResults([])
-        setOpen(false)
-        setStatus(
-          `Nothing found for “${q}”. Try the business name plus a city/district, a landmark, or tap the map.`
-        )
-        return
+    return () => {
+      if (debounceRef.current) {
+        window.clearTimeout(debounceRef.current)
       }
-
-      setResults(next)
-      setOpen(true)
-      setStatus(null)
-      writeCache(q, next)
-    } catch (err) {
-      if ((err as Error)?.name === 'AbortError') {
-        setResults([])
-        setOpen(false)
-        setStatus(
-          'Place search took too long. Try a more specific place name, or tap the map directly.'
-        )
-      } else {
-        setResults([])
-        setOpen(false)
-        setStatus(
-          'Could not reach place search. You can still drop the pin directly on the map.'
-        )
-      }
-    } finally {
-      window.clearTimeout(timeout)
-      setBusy(false)
     }
-  }
-
-  function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key !== 'Enter') return
-
-    // Critical: stop the surrounding seeker/employer profile form submitting.
-    e.preventDefault()
-    e.stopPropagation()
-
-    void search()
-  }
+  }, [query])
 
   function pick(place: PlaceResult) {
+    requestIdRef.current += 1
+    abortRef.current?.abort()
+
     setQuery(place.name)
     setResults([])
     setOpen(false)
-    setStatus(null)
+    setBusy(false)
+    setMessage(null)
+
     onPick(place)
   }
 
   return (
-    <div
-      className="placeSearch"
-      ref={boxRef}
-      onClick={e => e.stopPropagation()}
-    >
-      <div className="placeSearchField" role="search">
+    <div className="placeSearch livePlaceSearch" ref={rootRef}>
+      <div className="placeSearchField">
+        <span className="livePlaceSearchIcon" aria-hidden="true">
+          ⌖
+        </span>
+
         <input
           type="search"
           value={query}
-          onChange={e => setQuery(e.target.value)}
-          onFocus={() => results.length > 0 && setOpen(true)}
-          onKeyDown={handleKeyDown}
+          onChange={event => setQuery(event.target.value)}
+          onFocus={() => {
+            if (results.length) setOpen(true)
+          }}
+          onKeyDown={event => {
+            // This component sits inside profile forms.
+            // Enter should select the first suggestion, never submit the page.
+            if (event.key === 'Enter') {
+              event.preventDefault()
+              event.stopPropagation()
+
+              if (results[0]) {
+                pick(results[0])
+              }
+            }
+
+            if (event.key === 'Escape') {
+              setOpen(false)
+            }
+          }}
           placeholder={placeholder}
-          aria-label="Search for an address, landmark or business"
+          aria-label="Search map places"
+          aria-autocomplete="list"
+          aria-expanded={open}
           aria-busy={busy}
           autoComplete="off"
+          spellCheck={false}
         />
 
-        <button
-          type="button"
-          className="placeSearchButton"
-          disabled={busy}
-          onClick={e => {
-            // Critical: this button must never submit an outer profile form.
-            e.preventDefault()
-            e.stopPropagation()
-            void search()
-          }}
-        >
-          {busy ? (
-            <>
-              <span className="placeSearchSpinner" aria-hidden="true" />
-              <span className="srOnly">Searching</span>
-            </>
-          ) : (
-            'Search'
-          )}
-        </button>
+        {busy && (
+          <span
+            className="placeSearchSpinner livePlaceSearchSpinner"
+            aria-label="Finding places"
+          />
+        )}
+
+        {!busy && query && (
+          <button
+            type="button"
+            className="livePlaceSearchClear"
+            aria-label="Clear place search"
+            onClick={event => {
+              event.preventDefault()
+              event.stopPropagation()
+              requestIdRef.current += 1
+              abortRef.current?.abort()
+              setQuery('')
+              setResults([])
+              setOpen(false)
+              setMessage(null)
+            }}
+          >
+            ×
+          </button>
+        )}
       </div>
 
       {open && results.length > 0 && (
-        <ul className="placeResults">
+        <ul
+          className="placeResults livePlaceResults"
+          role="listbox"
+          aria-label="Matching map places"
+        >
           {results.map(place => (
-            <li key={place.id}>
+            <li key={place.id} role="option" aria-selected="false">
               <button
                 type="button"
-                onClick={e => {
-                  e.preventDefault()
-                  e.stopPropagation()
+                onMouseDown={event => {
+                  // Pick before the input loses focus.
+                  event.preventDefault()
+                }}
+                onClick={event => {
+                  event.preventDefault()
+                  event.stopPropagation()
                   pick(place)
                 }}
               >
-                <span className="placeResultTitle">
-                  <strong>{place.name}</strong>
-                  {place.source === 'awasar' && <em>On Awasar</em>}
+                <span className="livePlacePin" aria-hidden="true">
+                  {place.source === 'awasar' ? 'A' : '●'}
                 </span>
 
-                {place.address && <span>{place.address}</span>}
+                <span className="livePlaceCopy">
+                  <span className="placeResultTitle">
+                    <strong>{place.name}</strong>
+                    {place.source === 'awasar' && <em>On Awasar</em>}
+                  </span>
+
+                  {place.address && <span>{place.address}</span>}
+                </span>
               </button>
             </li>
           ))}
         </ul>
       )}
 
-      {status && (
+      {message && (
         <p className="placeSearchStatus muted" aria-live="polite">
-          {status}
+          {message}
         </p>
       )}
     </div>

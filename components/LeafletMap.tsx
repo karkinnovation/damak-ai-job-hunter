@@ -98,7 +98,7 @@ export function LocationPicker({
   const [lat, setLat] = useState<number | null>(latitude ?? null)
   const [lng, setLng] = useState<number | null>(longitude ?? null)
   const [markerLabel, setMarkerLabel] = useState(label)
-  const [status, setStatus] = useState('Search for a place, or tap the map to drop a pin.')
+  const [status, setStatus] = useState('Start typing a place above, choose a suggestion, or tap the map to drop a pin.')
 
   const fillAdministrativeFields = useCallback((location: {
     city?: string
@@ -172,7 +172,7 @@ export function LocationPicker({
   function handlePick(place: PlaceResult) {
     setPin(Number(place.latitude.toFixed(6)), Number(place.longitude.toFixed(6)))
     fillAdministrativeFields(place)
-    setStatus(`Pin set to ${place.name}. Location fields were filled when OpenStreetMap provided them; review them before saving.`)
+    setStatus(`Pin set to ${place.name}. Location fields were filled when map data provided them; review them before saving.`)
   }
 
   useEffect(() => {
@@ -280,7 +280,7 @@ export function LocationPicker({
       <div className="mapPickerHead">
         <div>
           <strong>{label}</strong>
-          <span className="mapPickerHint">Search once, then fine-tune the exact pin on the map.</span>
+          <span className="mapPickerHint">Start typing to see live places, then fine-tune the exact pin on the map.</span>
         </div>
         <button className="button secondary small" type="button" onClick={useCurrentLocation}>
           Use current location

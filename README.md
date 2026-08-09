@@ -1,39 +1,43 @@
-# Awasar map search submit fix
+# Awasar live map places update
 
-## What was wrong
+This update removes the map Search button completely.
 
-`components/PlaceSearch.tsx` rendered its own `<form>` even though `LocationPicker`
-is used inside the seeker/employer profile `<form>`.
+## New behaviour
 
-HTML does not support nested forms reliably. Clicking the map Search button could
-therefore submit the outer profile form, making the whole page refresh instead
-of running `/api/geocode`.
+- Start typing in the map place input.
+- After 3 characters, suggestions appear automatically.
+- Suggestions include:
+  - registered Awasar businesses first;
+  - Nepal-wide OpenStreetMap places via Photon.
+- No Enter/Search button is required.
+- Clicking a suggestion immediately moves the map pin.
+- Pressing Enter selects the first visible result and never submits the outer profile form.
+- Typing is debounced by 450ms and old requests are cancelled.
+- Search responses are cached in the browser and server/CDN.
+- Users can still tap the map or use current location.
 
-## What changed
+## Why Photon
 
-- Removed the nested `<form>` from PlaceSearch.
-- Map Search button is explicitly `type="button"`.
-- Search button calls geocoding directly.
-- Pressing Enter in the place input uses `preventDefault()` + `stopPropagation()`.
-- Search-result buttons are also explicitly `type="button"`.
-- Added a 9-second request timeout so a slow geocoder cannot appear stuck forever.
-- Existing OpenStreetMap/Nominatim + Awasar business search remains unchanged.
-- No Supabase migration is required.
+Public Nominatim explicitly forbids client autocomplete/search-as-you-type.
+Photon is an OpenStreetMap geocoder with search-as-you-type support.
 
-## Install
+## Files
 
-Replace:
-`components/PlaceSearch.tsx`
+- components/PlaceSearch.tsx
+- components/LeafletMap.tsx
+- app/api/geocode/route.ts
+- app/globals.css
 
-Then run:
-`npm run build`
+No Supabase migration is required.
 
-Test in both:
-- Job seeker profile map
-- Employer/business profile map
+## Test
 
-Search examples:
+Try:
 - Kathmandu
-- Pokhara Lakeside
+- Pokhara
 - Dharan
+- Birtamode
+- Lakeside
 - Karki Innovation
+
+The list should appear while typing without any Search button.

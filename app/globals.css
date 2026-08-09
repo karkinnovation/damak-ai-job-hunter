@@ -618,3 +618,87 @@ svg{flex:none}
   .placeSearchButton{width:100%}
   .mapRouteActions .button{flex:1 1 150px}
 }
+
+
+/* v12 — live map place suggestions (no Search button) */
+.livePlaceSearch .placeSearchField{
+  display:block;
+  position:relative;
+}
+.livePlaceSearch .placeSearchField input{
+  width:100%;
+  height:46px;
+  padding:0 44px 0 42px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+}
+.livePlaceSearchIcon{
+  position:absolute;
+  left:14px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:2;
+  color:var(--primary);
+  font-size:19px;
+  line-height:1;
+  pointer-events:none;
+}
+.livePlaceSearchSpinner{
+  right:15px;
+  top:50%;
+  margin-top:-7px;
+}
+.livePlaceSearchClear{
+  position:absolute;
+  right:9px;
+  top:50%;
+  transform:translateY(-50%);
+  width:32px;
+  height:32px;
+  border:0;
+  border-radius:999px;
+  background:transparent;
+  color:var(--muted);
+  font-size:22px;
+  line-height:1;
+  cursor:pointer;
+}
+.livePlaceSearchClear:hover{
+  background:var(--surface-soft);
+  color:var(--text);
+}
+.livePlaceResults{
+  top:50px;
+  max-height:300px;
+}
+.livePlaceResults button{
+  display:grid;
+  grid-template-columns:28px minmax(0,1fr);
+  align-items:start;
+  gap:9px;
+}
+.livePlacePin{
+  display:flex !important;
+  align-items:center;
+  justify-content:center;
+  width:27px;
+  height:27px;
+  margin-top:1px;
+  border-radius:999px;
+  background:var(--surface-soft);
+  color:var(--primary) !important;
+  font-weight:900;
+  font-size:11px !important;
+}
+.livePlaceCopy{
+  min-width:0;
+  display:grid !important;
+  gap:2px;
+}
+.livePlaceCopy > span:last-child{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
