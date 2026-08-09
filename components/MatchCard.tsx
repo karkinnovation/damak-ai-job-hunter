@@ -2,9 +2,10 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { CompanyMark } from '@/components/CompanyMark'
 import { IconCheck, IconAlert, IconArrowRight } from '@/components/Icon'
+import { locationLabel } from '@/lib/location'
 
 type Props = {
-  job: { id: string; title: string; category: string; ward: number; salary_min: number; salary_max: number; business_name?: string }
+  job: { id: string; title: string; category: string; ward: number; city?: string | null; district?: string | null; province?: string | null; salary_min: number; salary_max: number; business_name?: string }
   score: number
   explanation: ReactNode
   positives: string[]
@@ -19,7 +20,7 @@ export function MatchCard({ job, score, explanation, positives, mismatches }: Pr
         <div className="matchCardHead">
           <CompanyMark name={job.business_name} size={46} />
           <div>
-            <span className="eyebrow">{job.category} · Damak-{job.ward}</span>
+            <span className="eyebrow">{job.category} · {locationLabel(job)}</span>
             <h3>{job.title}</h3>
             <p className="muted">{job.business_name || 'Local employer'} · NPR {job.salary_min.toLocaleString()}–{job.salary_max.toLocaleString()}</p>
           </div>

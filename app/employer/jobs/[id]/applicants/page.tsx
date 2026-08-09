@@ -5,6 +5,7 @@ import { requireRole } from '@/lib/auth'
 import { calculateMatch, employerFallbackExplanation, employerReason } from '@/lib/matching'
 import { AIExplanation } from '@/components/AIExplanation'
 import { ApplicationStatus } from '@/components/ApplicationStatus'
+import { locationLabel } from '@/lib/location'
 
 async function setStatus(formData: FormData) {
   'use server'
@@ -25,7 +26,7 @@ export default async function Applicants({ params }: { params: Promise<{ id: str
   const { id } = await params
   const { supabase, user } = await requireRole(['employer'])
   const [{ data: job }, { data: apps }] = await Promise.all([
-    supabase.from('jobs').select('id,title,category,ward,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude').eq('id', id).eq('employer_id', user.id).maybeSingle(),
+    supabase.from('jobs').select('id,title,category,ward,city,district,province,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude').eq('id', id).eq('employer_id', user.id).maybeSingle(),
     supabase.from('applications').select('id,job_seeker_id,status,created_at').eq('job_id', id).order('created_at', { ascending: true }).limit(50),
   ])
   if (!job) notFound()
@@ -34,7 +35,7 @@ export default async function Applicants({ params }: { params: Promise<{ id: str
   const [{ data: profiles }, { data: seekers }] = candidateIds.length
     ? await Promise.all([
         supabase.from('profiles').select('id,full_name').in('id', candidateIds),
-        supabase.from('job_seeker_profiles').select('user_id,skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,preferred_categories').in('user_id', candidateIds),
+        supabase.from('job_seeker_profiles').select('user_id,skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,city,district,province,preferred_categories').in('user_id', candidateIds),
       ])
     : [{ data: [] as any[] }, { data: [] as any[] }]
 
@@ -50,12 +51,12 @@ export default async function Applicants({ params }: { params: Promise<{ id: str
         skills: seeker.skills || [], experience_months: seeker.experience_months, education_level: seeker.education_level,
         expected_salary_min: seeker.expected_salary_min, expected_salary_max: seeker.expected_salary_max, employment_type: seeker.employment_type,
         available_from: String(seeker.available_from).slice(0, 5), available_until: String(seeker.available_until).slice(0, 5), max_travel_km: Number(seeker.max_travel_km),
-        latitude: seeker.latitude, longitude: seeker.longitude, ward: seeker.ward, preferred_categories: seeker.preferred_categories || [],
+        latitude: seeker.latitude, longitude: seeker.longitude, ward: seeker.ward, city: seeker.city, district: seeker.district, province: seeker.province, preferred_categories: seeker.preferred_categories || [],
       },
       job: {
         required_skills: job.required_skills || [], preferred_skills: job.preferred_skills || [], experience_required_months: job.experience_required_months,
         education_requirement: job.education_requirement, salary_min: job.salary_min, salary_max: job.salary_max, employment_type: job.employment_type,
-        working_start: String(job.working_start).slice(0, 5), working_end: String(job.working_end).slice(0, 5), latitude: job.latitude, longitude: job.longitude, ward: job.ward, category: job.category,
+        working_start: String(job.working_start).slice(0, 5), working_end: String(job.working_end).slice(0, 5), latitude: job.latitude, longitude: job.longitude, ward: job.ward, city: job.city, district: job.district, province: job.province, category: job.category,
       },
     })
     return [{ app, profile, seeker, breakdown }]
@@ -80,7 +81,7 @@ export default async function Applicants({ params }: { params: Promise<{ id: str
                 <div>
                   <span className="eyebrow">#{index + 1} recommendation</span>
                   <h3>{r.profile?.full_name || 'Applicant'}</h3>
-                  <p className="muted">{r.seeker.experience_months} months experience · Damak-{r.seeker.ward}</p>
+                  <p className="muted">{r.seeker.experience_months} months experience · {locationLabel(r.seeker)}</p>
                 </div>
                 <div className={`score score${Math.min(4, Math.floor(r.breakdown.score / 20))}`} style={{ ['--pct' as any]: r.breakdown.score }}>
                   <div className="scoreInner">{r.breakdown.score}%<small>match</small></div>

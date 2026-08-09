@@ -24,3 +24,14 @@ export const COMMON_SKILLS = [
   'Photoshop', 'Social Media', 'Typing', 'Driving', 'Electrical Repair',
   'Hardware Repair', 'Web Development', 'JavaScript', 'React', 'Data Entry',
 ] as const
+
+
+export const NEPAL_PROVINCES = [
+  'Koshi Province',
+  'Madhesh Province',
+  'Bagmati Province',
+  'Gandaki Province',
+  'Lumbini Province',
+  'Karnali Province',
+  'Sudurpashchim Province',
+] as const

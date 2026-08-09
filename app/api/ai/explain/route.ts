@@ -24,6 +24,7 @@ function matchInput(seeker: any, job: any) {
       latitude: seeker.latitude,
       longitude: seeker.longitude,
       ward: seeker.ward,
+      city: seeker.city, district: seeker.district, province: seeker.province,
       preferred_categories: seeker.preferred_categories || [],
     },
     job: {
@@ -39,6 +40,7 @@ function matchInput(seeker: any, job: any) {
       latitude: job.latitude,
       longitude: job.longitude,
       ward: job.ward,
+      city: job.city, district: job.district, province: job.province,
       category: job.category,
     },
   }
@@ -59,7 +61,7 @@ export async function POST(request: Request) {
   const audience: 'job_seeker' | 'employer' = profile.role === 'employer' ? 'employer' : 'job_seeker'
   const { jobId, candidateId } = parsed.data
   let candidate = userId
-  let jobQuery = supabase.from('jobs').select('id,title,category,ward,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude,employer_id,status').eq('id', jobId)
+  let jobQuery = supabase.from('jobs').select('id,title,category,ward,city,district,province,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude,employer_id,status').eq('id', jobId)
 
   if (profile.role === 'job_seeker') {
     if (candidateId && candidateId !== userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -81,7 +83,7 @@ export async function POST(request: Request) {
 
   const [{ data: job }, { data: seeker }] = await Promise.all([
     jobQuery.maybeSingle(),
-    supabase.from('job_seeker_profiles').select('skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,preferred_categories').eq('user_id', candidate).maybeSingle(),
+    supabase.from('job_seeker_profiles').select('skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,city,district,province,preferred_categories').eq('user_id', candidate).maybeSingle(),
   ])
   if (!job || !seeker) return NextResponse.json({ error: 'Match data unavailable' }, { status: 404 })
 

@@ -11,7 +11,7 @@ const LEAFLET_CSS = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
 const LEAFLET_JS = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
 const LEAFLET_CSS_INTEGRITY = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY='
 const LEAFLET_JS_INTEGRITY = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo='
-const DAMAK_CENTER: [number, number] = [26.66, 87.70]
+const NEPAL_CENTER: [number, number] = [28.3949, 84.1240]
 
 function loadLeaflet() {
   if (typeof window === 'undefined') return Promise.reject(new Error('Leaflet requires a browser'))
@@ -100,6 +100,29 @@ export function LocationPicker({
   const [markerLabel, setMarkerLabel] = useState(label)
   const [status, setStatus] = useState('Search for a place, or tap the map to drop a pin.')
 
+  const fillAdministrativeFields = useCallback((location: {
+    city?: string
+    district?: string
+    province?: string
+    ward?: number | null
+  }) => {
+    const values: Record<string, string | number | undefined | null> = {
+      city: location.city,
+      district: location.district,
+      province: location.province,
+      ward: location.ward,
+    }
+
+    for (const [name, value] of Object.entries(values)) {
+      if (value == null || value === '') continue
+      const field = document.querySelector(`[name="${name}"]`) as HTMLInputElement | HTMLSelectElement | null
+      if (!field) continue
+      field.value = String(value)
+      field.dispatchEvent(new Event('input', { bubbles: true }))
+      field.dispatchEvent(new Event('change', { bubbles: true }))
+    }
+  }, [])
+
   useEffect(() => {
     if (!liveLabelInputName) return
     const input = document.querySelector(`input[name="${liveLabelInputName}"]`) as HTMLInputElement | null
@@ -148,7 +171,8 @@ export function LocationPicker({
 
   function handlePick(place: PlaceResult) {
     setPin(Number(place.latitude.toFixed(6)), Number(place.longitude.toFixed(6)))
-    setStatus(`Pin set to ${place.name}. Drag it if the exact entrance is slightly off.`)
+    fillAdministrativeFields(place)
+    setStatus(`Pin set to ${place.name}. Location fields were filled when OpenStreetMap provided them; review them before saving.`)
   }
 
   useEffect(() => {
@@ -156,12 +180,12 @@ export function LocationPicker({
 
     loadLeaflet().then((L) => {
       if (cancelled || mapRef.current) return
-      const start: [number, number] = lat != null && lng != null ? [lat, lng] : DAMAK_CENTER
+      const start: [number, number] = lat != null && lng != null ? [lat, lng] : NEPAL_CENTER
       const map = L.map(`awasar-map-${id}`, {
         scrollWheelZoom: false,
         zoomControl: true,
         preferCanvas: true,
-      }).setView(start, lat != null ? 15 : 13)
+      }).setView(start, lat != null ? 15 : 7)
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -227,12 +251,24 @@ export function LocationPicker({
 
     setStatus('Getting your current location…')
     navigator.geolocation.getCurrentPosition(
-      position => {
-        setPin(
-          Number(position.coords.latitude.toFixed(6)),
-          Number(position.coords.longitude.toFixed(6))
-        )
-        setStatus('Current location selected. Drag the pin to fine-tune it.')
+      async position => {
+        const nextLat = Number(position.coords.latitude.toFixed(6))
+        const nextLng = Number(position.coords.longitude.toFixed(6))
+        setPin(nextLat, nextLng)
+        setStatus('Current location selected. Identifying city, district and province…')
+
+        try {
+          const res = await fetch(`/api/reverse-geocode?lat=${nextLat}&lon=${nextLng}`)
+          const data = await res.json()
+          if (res.ok) {
+            fillAdministrativeFields(data)
+            setStatus('Current location selected. Location fields were filled automatically; review them before saving.')
+          } else {
+            setStatus('Current location selected. Please fill city, district and province manually.')
+          }
+        } catch {
+          setStatus('Current location selected. Please fill city, district and province manually.')
+        }
       },
       () => setStatus('Could not access your location. Please choose it manually on the map.'),
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }

@@ -1,7 +1,7 @@
 /*
  * A monogram tile standing in for an employer logo.
  *
- * Local employers in Damak mostly won't upload a logo, so instead of an
+ * Many local employers won't upload a logo, so instead of an
  * empty grey square (or nothing at all) every listing gets a consistent,
  * recognisable mark. The tint is derived from the business name, so the
  * same employer always looks the same across the site and the eye can

@@ -12,6 +12,9 @@ export type MatchInput = {
     latitude?: number | null
     longitude?: number | null
     ward: number
+    city?: string | null
+    district?: string | null
+    province?: string | null
     preferred_categories?: string[]
   }
   job: {
@@ -27,6 +30,9 @@ export type MatchInput = {
     latitude?: number | null
     longitude?: number | null
     ward: number
+    city?: string | null
+    district?: string | null
+    province?: string | null
     category: string
   }
 }
@@ -125,8 +131,24 @@ export function calculateMatch({ seeker, job }: MatchInput): MatchBreakdown {
     if (distanceKm <= seeker.max_travel_km) positives.push(`${distanceKm.toFixed(1)} km away, within your travel preference`)
     else mismatches.push(`${distanceKm.toFixed(1)} km away, beyond your preferred ${seeker.max_travel_km} km`)
   } else {
-    locationRaw = seeker.ward === job.ward ? 100 : Math.abs(seeker.ward - job.ward) <= 1 ? 75 : 50
-    if (seeker.ward === job.ward) positives.push('Workplace is in the same Damak ward')
+    const seekerCity = normalize(seeker.city || '')
+    const jobCity = normalize(job.city || '')
+    const seekerDistrict = normalize(seeker.district || '')
+    const jobDistrict = normalize(job.district || '')
+    const seekerProvince = normalize(seeker.province || '')
+    const jobProvince = normalize(job.province || '')
+
+    if (seekerCity && jobCity && seekerCity === jobCity) {
+      locationRaw = seeker.ward === job.ward ? 100 : 85
+      positives.push(seeker.ward === job.ward ? 'Workplace is in the same ward' : 'Workplace is in the same city / municipality')
+    } else if (seekerDistrict && jobDistrict && seekerDistrict === jobDistrict) {
+      locationRaw = 70
+      positives.push('Workplace is in the same district')
+    } else if (seekerProvince && jobProvince && seekerProvince === jobProvince) {
+      locationRaw = 50
+    } else {
+      locationRaw = 25
+    }
   }
 
   const categoryRaw = !seeker.preferred_categories?.length ? 100 : seeker.preferred_categories.map(normalize).includes(normalize(job.category)) ? 100 : 20

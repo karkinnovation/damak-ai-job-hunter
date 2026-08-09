@@ -1,13 +1,14 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { JOB_CATEGORIES } from '@/lib/constants'
+import { locationLabel } from '@/lib/location'
 import RefreshFilterReset from '@/components/RefreshFilterReset'
 import SearchSubmitButton from '@/components/SearchSubmitButton'
 import FastSearchForm from '@/components/FastSearchForm'
 import { CompanyMark } from '@/components/CompanyMark'
 import { IconSearch, IconMapPin, IconBriefcase, IconArrowRight } from '@/components/Icon'
 
-type SearchParams = Promise<{ q?: string; category?: string; skill?: string; salaryRange?: string }>
+type SearchParams = Promise<{ q?: string; category?: string; skill?: string; salaryRange?: string; location?: string }>
 
 function money(value: number) {
   return new Intl.NumberFormat('en-NP').format(value)
@@ -48,12 +49,13 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   const category = (params.category || '').trim()
   const skill = normalize(params.skill)
   const salaryRange = (params.salaryRange || '').trim()
-  const isFiltering = Boolean(q || category || skill || salaryRange)
+  const location = normalize(params.location)
+  const isFiltering = Boolean(q || category || skill || salaryRange || location)
 
   const supabase = await createClient()
   let jobsQuery = supabase
     .from('jobs')
-    .select('id,title,description,category,ward,salary_min,salary_max,employment_type,required_skills,preferred_skills,created_at,businesses(business_name)')
+    .select('id,title,description,category,city,district,province,ward,salary_min,salary_max,employment_type,required_skills,preferred_skills,created_at,businesses(business_name)')
     .eq('status', 'open')
 
   if (category) jobsQuery = jobsQuery.eq('category', category)
@@ -67,13 +69,15 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
 
   const jobs = (data || []).filter((job: any) => {
     const skills = [...(job.required_skills || []), ...(job.preferred_skills || [])]
-    const haystack = `${job.title} ${job.description || ''} ${job.category} ${businessName(job)} ${skills.join(' ')}`.toLowerCase()
+    const haystack = `${job.title} ${job.description || ''} ${job.category} ${businessName(job)} ${job.city || ''} ${job.district || ''} ${job.province || ''} ${skills.join(' ')}`.toLowerCase()
+    const locationHaystack = `${job.city || ''} ${job.district || ''} ${job.province || ''}`.toLowerCase()
     const skillHaystack = skills.join(' ').toLowerCase()
 
     return (
       (!q || haystack.includes(q)) &&
       (!category || job.category === category) &&
       (!skill || skillHaystack.includes(skill)) &&
+      (!location || locationHaystack.includes(location)) &&
       salaryMatches(job, salaryRange)
     )
   }).slice(0, 12)
@@ -89,7 +93,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
             <span className="eyebrow">अवसर · Job search made easier</span>
             <h1>Find your dream job.</h1>
             <p className="heroOneLiner">
-              Real vacancies from employers across Damak and Jhapa — with a match score that tells you where you actually stand.
+              Real vacancies from employers across Nepal — with a match score that tells you where you actually stand.
             </p>
           </div>
 
@@ -109,6 +113,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
               <option value="75plus">NPR 75,000 and above</option>
             </select>
             <input name="skill" defaultValue={params.skill || ''} placeholder="Skill (optional), e.g. Excel" aria-label="Required skill" />
+            <input name="location" defaultValue={params.location || ''} placeholder="City, district or province" aria-label="Job location" />
             <SearchSubmitButton />
           </FastSearchForm>
 
@@ -132,7 +137,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
           <div>
             <span className="eyebrow">{isFiltering ? 'Search results' : 'Latest vacancies'}</span>
             <h2>{isFiltering ? `${jobs.length} matching job${jobs.length === 1 ? '' : 's'}` : 'Jobs you can apply for now'}</h2>
-            {!isFiltering && <p className="homeJobsSecondary">Search jobs locally · Smart recommendations · Easy search</p>}
+            {!isFiltering && <p className="homeJobsSecondary">Search across Nepal · Smart recommendations · Easy search</p>}
           </div>
           {isFiltering && <Link className="button secondary" href="/#vacancies">Clear filters</Link>}
         </div>
@@ -150,7 +155,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
 
               <div className="vacancyTags">
                 <span className="categoryPill">{job.category}</span>
-                <span className="locationPill"><IconMapPin size={12} /> Damak-{job.ward}</span>
+                <span className="locationPill"><IconMapPin size={12} /> {locationLabel(job)}</span>
               </div>
 
               <p className="vacancyDescription">{job.description}</p>

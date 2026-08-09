@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { requireRole } from '@/lib/auth'
 import { calculateMatch, fallbackExplanation } from '@/lib/matching'
 import { ApplicationStatus } from '@/components/ApplicationStatus'
+import { locationLabel } from '@/lib/location'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,7 +13,7 @@ function formatDate(value: string) {
 export default async function Applications() {
   const { supabase, user } = await requireRole(['job_seeker'])
   const [{ data: apps }, { data: seeker }] = await Promise.all([
-    supabase.from('applications').select('id,status,created_at,job_id,distance_km,jobs(id,title,ward,category,required_skills,preferred_skills,experience_required_months,education_requirement,salary_min,salary_max,employment_type,working_start,working_end,latitude,longitude)').eq('job_seeker_id', user.id).order('created_at', { ascending: false }),
+    supabase.from('applications').select('id,status,created_at,job_id,distance_km,jobs(id,title,ward,city,district,province,category,required_skills,preferred_skills,experience_required_months,education_requirement,salary_min,salary_max,employment_type,working_start,working_end,latitude,longitude)').eq('job_seeker_id', user.id).order('created_at', { ascending: false }),
     supabase.from('job_seeker_profiles').select('skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,preferred_categories').eq('user_id', user.id).maybeSingle(),
   ])
 
@@ -62,7 +63,7 @@ export default async function Applications() {
                 <span className="eyebrow">Applied {formatDate(a.created_at)}</span>
                 <h3>{a.jobs?.title}</h3>
                 <div className="meta">
-                  <span>Damak-{a.jobs?.ward}</span>
+                  <span>{a.jobs ? locationLabel(a.jobs) : 'Nepal'}</span>
                   {a.match?.score != null && <span className="pill">{a.match.score}% match</span>}
                   {a.distance_km != null && <span className="pill">{Number(a.distance_km).toFixed(1)} km away</span>}
                 </div>

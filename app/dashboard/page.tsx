@@ -4,6 +4,7 @@ import { ApplicationStatus } from '@/components/ApplicationStatus'
 import { calculateMatch } from '@/lib/matching'
 import { ApplicationFatigueNudge } from '@/components/ApplicationFatigueNudge'
 import { fatigueNudgeCopy } from '@/lib/applicationInsights'
+import { locationLabel } from '@/lib/location'
 
 export const dynamic = 'force-dynamic'
 
@@ -38,14 +39,14 @@ export default async function Dashboard() {
     ] = await Promise.all([
       supabase
         .from('job_seeker_profiles')
-        .select('user_id,skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,preferred_categories,show_availability_to_employers')
+        .select('user_id,skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,city,district,province,preferred_categories,show_availability_to_employers')
         .eq('user_id', user.id)
         .maybeSingle(),
       supabase.from('applications').select('*', { count: 'exact', head: true }).eq('job_seeker_id', user.id),
       supabase.from('applications').select('id,status,created_at,jobs(title)').eq('job_seeker_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
       supabase
         .from('jobs')
-        .select('id,title,category,ward,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude,businesses(business_name)')
+        .select('id,title,category,ward,city,district,province,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude,businesses(business_name)')
         .eq('status', 'open')
         .order('created_at', { ascending: false })
         .limit(30),
@@ -77,6 +78,7 @@ export default async function Dashboard() {
                 latitude: seeker.latitude,
                 longitude: seeker.longitude,
                 ward: seeker.ward,
+                city: seeker.city, district: seeker.district, province: seeker.province,
                 preferred_categories: seeker.preferred_categories || [],
               },
               job: {
@@ -92,6 +94,7 @@ export default async function Dashboard() {
                 latitude: job.latitude,
                 longitude: job.longitude,
                 ward: job.ward,
+                city: job.city, district: job.district, province: job.province,
                 category: job.category,
               },
             })
@@ -178,7 +181,7 @@ export default async function Dashboard() {
                     <span className={`matchScoreBadge matchScore${Math.min(4, Math.floor(breakdown.score / 20))}`}>{breakdown.score}% Match</span>
                   </div>
 
-                  <span className="eyebrow">{job.category} · Damak-{job.ward}</span>
+                  <span className="eyebrow">{job.category} · {locationLabel(job)}</span>
                   <h3><Link href={`/jobs/${job.id}`}>{job.title}</Link></h3>
                   <p className="companyName">{job.businesses?.business_name || 'Local employer'}</p>
 

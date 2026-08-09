@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
 import { ApplicationStatus } from '@/components/ApplicationStatus'
+import { locationLabel } from '@/lib/location'
 
 export const dynamic = 'force-dynamic'
 
@@ -64,6 +65,8 @@ export default async function JobDetails({ params }: PageProps) {
       preferred_skills,
       ward,
       city,
+      district,
+      province,
       latitude,
       longitude,
       status,
@@ -251,8 +254,7 @@ export default async function JobDetails({ params }: PageProps) {
             >
               {business?.business_name || 'Local Employer'}
               {' · '}
-              {job.city || 'Damak'}
-              {job.ward ? `-${job.ward}` : ''}
+              {locationLabel(job)}
             </p>
 
             <div
@@ -535,8 +537,7 @@ export default async function JobDetails({ params }: PageProps) {
                 </div>
 
                 <strong>
-                  {job.city || 'Damak'}
-                  {job.ward ? `-${job.ward}` : ''}
+                  {locationLabel(job)}
                 </strong>
               </div>
             </div>

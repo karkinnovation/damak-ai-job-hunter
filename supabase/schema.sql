@@ -1,4 +1,4 @@
--- Damak AI Job Hunter — Supabase schema + security policies
+-- Awasar Nepal — Supabase schema + security policies
 -- Run this once in Supabase SQL Editor on a fresh project.
 
 create extension if not exists pgcrypto;
@@ -12,8 +12,10 @@ create table if not exists public.profiles (
 
 create table if not exists public.job_seeker_profiles (
   user_id uuid primary key references public.profiles(id) on delete cascade,
-  ward smallint not null check (ward between 1 and 10),
-  city text not null default 'Damak' check (city = 'Damak'),
+  ward smallint not null check (ward between 1 and 99),
+  city text not null,
+  district text,
+  province text,
   education_level text not null,
   experience_months integer not null default 0 check (experience_months between 0 and 600),
   expected_salary_min integer not null check (expected_salary_min >= 0),
@@ -35,8 +37,10 @@ create table if not exists public.businesses (
   user_id uuid not null unique references public.profiles(id) on delete cascade,
   business_name text not null check (char_length(business_name) between 2 and 160),
   business_type text not null,
-  ward smallint not null check (ward between 1 and 10),
-  city text not null default 'Damak' check (city = 'Damak'),
+  ward smallint not null check (ward between 1 and 99),
+  city text not null,
+  district text,
+  province text,
   phone text not null,
   latitude double precision check (latitude between -90 and 90),
   longitude double precision check (longitude between -180 and 180),
@@ -50,8 +54,10 @@ create table if not exists public.jobs (
   title text not null check (char_length(title) between 2 and 120),
   description text not null check (char_length(description) between 20 and 4000),
   category text not null,
-  ward smallint not null check (ward between 1 and 10),
-  city text not null default 'Damak' check (city = 'Damak'),
+  ward smallint not null check (ward between 1 and 99),
+  city text not null,
+  district text,
+  province text,
   salary_min integer not null check (salary_min >= 0),
   salary_max integer not null check (salary_max >= salary_min),
   employment_type text not null check (employment_type in ('full_time','part_time')),
@@ -108,7 +114,7 @@ set search_path = public
 as $$
 begin
   update public.jobs
-  set latitude = new.latitude, longitude = new.longitude, ward = new.ward
+  set latitude = new.latitude, longitude = new.longitude, ward = new.ward, city = new.city, district = new.district, province = new.province
   where business_id = new.id;
   return new;
 end;
@@ -116,13 +122,13 @@ $$;
 
 drop trigger if exists sync_business_location_to_jobs on public.businesses;
 create trigger sync_business_location_to_jobs
-after update of latitude, longitude, ward on public.businesses
+after update of latitude, longitude, ward, city, district, province on public.businesses
 for each row execute procedure public.sync_business_job_location();
 revoke all on function public.sync_business_job_location() from public;
 
 -- Backfill any existing vacancies from the current business pin.
 update public.jobs j
-set latitude = b.latitude, longitude = b.longitude, ward = b.ward
+set latitude = b.latitude, longitude = b.longitude, ward = b.ward, city = b.city, district = b.district, province = b.province
 from public.businesses b
 where j.business_id = b.id
   and b.latitude is not null and b.longitude is not null;
@@ -387,7 +393,7 @@ with check (job_seeker_id = auth.uid() or public.employer_can_match(job_id, job_
 -- API privileges. RLS above still controls every row.
 grant usage on schema public to anon, authenticated;
 grant select on public.jobs to anon;
-grant select (id, business_name, business_type, ward, city) on public.businesses to anon;
+grant select (id, business_name, business_type, ward, city, district, province) on public.businesses to anon;
 grant select, insert, update on public.profiles, public.job_seeker_profiles, public.businesses, public.jobs, public.applications, public.match_results to authenticated;
 
 -- To create an admin after registering that account, run as the database owner in SQL Editor:

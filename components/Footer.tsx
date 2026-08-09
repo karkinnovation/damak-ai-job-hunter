@@ -15,7 +15,7 @@ export function Footer() {
           <p className="footerWordmark">अवसर <span>Awasar</span></p>
           <p className="footerTagline">सही काम, सही अवसर.</p>
           <p className="footerBlurb">
-            Local vacancies across Damak and Jhapa, with compatibility matching
+            Jobs across Nepal, with compatibility matching
             that shows you why a job fits before you apply.
           </p>
         </div>
@@ -39,7 +39,7 @@ export function Footer() {
       </div>
 
       <div className="footerBase">
-        <span>© {new Date().getFullYear()} Awasar · Damak, Jhapa</span>
+        <span>© {new Date().getFullYear()} Awasar · Nepal</span>
         <span>Matching is AI-assisted. Employers make the final hiring decision.</span>
       </div>
     </footer>

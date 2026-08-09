@@ -13,7 +13,7 @@ const display = Space_Grotesk({ subsets: ['latin'], display: 'swap', variable: '
 
 export const metadata: Metadata = {
   title: 'अवसर · Awasar',
-  description: 'Local job search and AI-powered compatibility matching for Jhapa, Nepal.',
+  description: 'Local job search and AI-powered compatibility matching for Nepal, Nepal.',
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

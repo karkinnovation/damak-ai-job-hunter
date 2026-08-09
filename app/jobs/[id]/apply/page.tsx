@@ -6,6 +6,7 @@ import { calculateMatch, haversineKm } from '@/lib/matching'
 import { snapshotMismatchPatterns } from '@/lib/applicationInsights'
 import { JourneyMap } from '@/components/JourneyMap'
 import { ApplyGuard } from '@/components/ApplyGuard'
+import { locationLabel } from '@/lib/location'
 
 const HOURLY_LIMIT = 2
 const DAILY_LIMIT = 5
@@ -25,6 +26,7 @@ function matchInput(seeker: any, job: any) {
       latitude: seeker.latitude,
       longitude: seeker.longitude,
       ward: seeker.ward,
+      city: seeker.city, district: seeker.district, province: seeker.province,
       preferred_categories: seeker.preferred_categories || [],
     },
     job: {
@@ -40,6 +42,7 @@ function matchInput(seeker: any, job: any) {
       latitude: job.latitude,
       longitude: job.longitude,
       ward: job.ward,
+      city: job.city, district: job.district, province: job.province,
       category: job.category,
     },
   }
@@ -62,8 +65,8 @@ async function confirmApply(formData: FormData) {
   const jobId = String(formData.get('job_id') || '')
 
   const [{ data: seeker }, { data: job }] = await Promise.all([
-    supabase.from('job_seeker_profiles').select('user_id,skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,preferred_categories').eq('user_id', user.id).maybeSingle(),
-    supabase.from('jobs').select('id,title,status,category,ward,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude,businesses(business_name,latitude,longitude)').eq('id', jobId).maybeSingle(),
+    supabase.from('job_seeker_profiles').select('user_id,skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,city,district,province,preferred_categories').eq('user_id', user.id).maybeSingle(),
+    supabase.from('jobs').select('id,title,status,category,ward,city,district,province,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude,businesses(business_name,latitude,longitude)').eq('id', jobId).maybeSingle(),
   ])
 
   if (!job || job.status !== 'open') redirect('/jobs?error=' + encodeURIComponent('This vacancy is no longer open.'))
@@ -111,8 +114,8 @@ export default async function ApplyPreview({ params, searchParams }: { params: P
   const { supabase, user } = await requireRole(['job_seeker'])
 
   const [jobResult, seekerResult, existingResult, rateResult] = await Promise.all([
-    supabase.from('jobs').select('id,title,status,category,ward,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude,businesses(business_name,latitude,longitude)').eq('id', id).eq('status', 'open').maybeSingle(),
-    supabase.from('job_seeker_profiles').select('user_id,skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,preferred_categories').eq('user_id', user.id).maybeSingle(),
+    supabase.from('jobs').select('id,title,status,category,ward,city,district,province,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude,businesses(business_name,latitude,longitude)').eq('id', id).eq('status', 'open').maybeSingle(),
+    supabase.from('job_seeker_profiles').select('user_id,skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,city,district,province,preferred_categories').eq('user_id', user.id).maybeSingle(),
     supabase.from('applications').select('id,status').eq('job_id', id).eq('job_seeker_id', user.id).maybeSingle(),
     supabase.rpc('application_rate_status', { p_hourly_limit: HOURLY_LIMIT, p_daily_limit: DAILY_LIMIT }),
   ])
@@ -147,7 +150,7 @@ export default async function ApplyPreview({ params, searchParams }: { params: P
     <section className="narrow applyPreviewPage">
       <span className="eyebrow">Confirm application</span>
       <h1>{job.title}</h1>
-      <p className="muted">{business?.business_name || 'Local employer'} · Damak-{job.ward}</p>
+      <p className="muted">{business?.business_name || 'Local employer'} · {locationLabel(job)}</p>
       {error && <p className="error">{error}</p>}
 
       {hasDistance ? (

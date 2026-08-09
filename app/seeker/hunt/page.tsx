@@ -13,12 +13,12 @@ export default async function HuntJobs() {
   const [{ data: seeker }, { data: jobs }] = await Promise.all([
     supabase
       .from('job_seeker_profiles')
-      .select('skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,preferred_categories')
+      .select('skills,experience_months,education_level,expected_salary_min,expected_salary_max,employment_type,available_from,available_until,max_travel_km,latitude,longitude,ward,city,district,province,preferred_categories')
       .eq('user_id', user.id)
       .maybeSingle(),
     supabase
       .from('jobs')
-      .select('id,title,category,ward,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude,businesses(business_name)')
+      .select('id,title,category,ward,city,district,province,salary_min,salary_max,employment_type,required_skills,preferred_skills,experience_required_months,education_requirement,working_start,working_end,latitude,longitude,businesses(business_name)')
       .eq('status', 'open')
       .order('created_at', { ascending: false })
       .limit(30),
@@ -32,13 +32,13 @@ export default async function HuntJobs() {
         skills: seeker.skills || [], experience_months: seeker.experience_months, education_level: seeker.education_level,
         expected_salary_min: seeker.expected_salary_min, expected_salary_max: seeker.expected_salary_max,
         employment_type: seeker.employment_type, available_from: String(seeker.available_from).slice(0, 5), available_until: String(seeker.available_until).slice(0, 5),
-        max_travel_km: Number(seeker.max_travel_km), latitude: seeker.latitude, longitude: seeker.longitude, ward: seeker.ward,
+        max_travel_km: Number(seeker.max_travel_km), latitude: seeker.latitude, longitude: seeker.longitude, ward: seeker.ward, city: seeker.city, district: seeker.district, province: seeker.province,
         preferred_categories: seeker.preferred_categories || [],
       },
       job: {
         required_skills: job.required_skills || [], preferred_skills: job.preferred_skills || [], experience_required_months: job.experience_required_months,
         education_requirement: job.education_requirement, salary_min: job.salary_min, salary_max: job.salary_max, employment_type: job.employment_type,
-        working_start: String(job.working_start).slice(0, 5), working_end: String(job.working_end).slice(0, 5), latitude: job.latitude, longitude: job.longitude, ward: job.ward, category: job.category,
+        working_start: String(job.working_start).slice(0, 5), working_end: String(job.working_end).slice(0, 5), latitude: job.latitude, longitude: job.longitude, ward: job.ward, city: job.city, district: job.district, province: job.province, category: job.category,
       },
     })
     return { job, breakdown }
@@ -69,7 +69,7 @@ export default async function HuntJobs() {
           return (
             <MatchCard
               key={job.id}
-              job={{ id: job.id, title: job.title, category: job.category, ward: job.ward, salary_min: job.salary_min, salary_max: job.salary_max, business_name: job.businesses?.business_name }}
+              job={{ id: job.id, title: job.title, category: job.category, ward: job.ward, city: job.city, district: job.district, province: job.province, salary_min: job.salary_min, salary_max: job.salary_max, business_name: job.businesses?.business_name }}
               score={breakdown.score}
               explanation={<AIExplanation jobId={job.id} fallback={fallback} auto={index < 2} />}
               positives={breakdown.positives}

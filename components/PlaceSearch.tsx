@@ -9,6 +9,10 @@ export type PlaceResult = {
   latitude: number
   longitude: number
   source?: 'awasar' | 'osm'
+  city?: string
+  district?: string
+  province?: string
+  ward?: number
 }
 
 type CachedSearch = {
@@ -87,7 +91,7 @@ export function PlaceSearch({
     if (q.length < 2) {
       setResults([])
       setOpen(false)
-      setStatus('Type at least 2 characters, for example “Damak Chowk” or a business name.')
+      setStatus('Type at least 2 characters, for example “Kathmandu”, “Pokhara Lakeside” or a business name.')
       return
     }
 
@@ -120,7 +124,7 @@ export function PlaceSearch({
       } else if (!next.length) {
         setResults([])
         setOpen(false)
-        setStatus(`Nothing found for “${q}”. Try the business name plus “Damak”, a landmark, or tap the map.`)
+        setStatus(`Nothing found for “${q}”. Try the business name plus a city/district, a landmark, or tap the map.`)
       } else {
         setResults(next)
         setOpen(true)

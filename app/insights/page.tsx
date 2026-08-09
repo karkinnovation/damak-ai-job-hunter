@@ -5,7 +5,7 @@ import { IconUsers, IconBriefcase, IconClock, IconArrowRight } from '@/component
 
 export const metadata = {
   title: 'Market insights · Awasar',
-  description: 'When employers in Damak and Jhapa hire, which roles open most, and how much competition to expect.',
+  description: 'When employers in Nepal hire, which roles open most, and how much competition to expect.',
 }
 
 export default function Insights() {
@@ -33,7 +33,7 @@ export default function Insights() {
       <div className="sectionHeader">
         <div>
           <span className="eyebrow">Market insights</span>
-          <h1>When Damak hires</h1>
+          <h1>When Nepal hires</h1>
           <p className="muted">{data.periodLabel}</p>
         </div>
         <Link className="button secondary" href="/jobs">Browse vacancies <IconArrowRight size={15} /></Link>
@@ -45,7 +45,7 @@ export default function Insights() {
           <span className="statIcon"><IconUsers size={18} /></span>
           <span className="statValue">{data.applicationsThisMonth}</span>
           <span className="statLabel">Applications this month</span>
-          <p className="muted">Across every vacancy in Damak and Jhapa.</p>
+          <p className="muted">Across every vacancy in Nepal.</p>
         </article>
 
         <article className="card statCard">

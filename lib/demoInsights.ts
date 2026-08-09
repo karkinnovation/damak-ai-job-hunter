@@ -73,7 +73,7 @@ const CATEGORIES: CategoryRow[] = [
 export function getHiringInsights(): HiringInsights {
   return {
     isSample: true,
-    periodLabel: 'Last 12 months · Damak & Jhapa',
+    periodLabel: 'Last 12 months · Nepal',
     applicationsThisMonth: 250,
     openRolesNow: 100,
     hiringEmployers: 34,
